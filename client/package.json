@@ -1,0 +1,57 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.0.9",
+    "axios": "^0.27.2",
+    "clipboard": "^2.0.11",
+    "core-js": "^3.8.3",
+    "crypto-js": "^4.1.1",
+    "element-plus": "^2.2.16",
+    "js-cookie": "^3.0.1",
+    "js-sha1": "^0.6.0",
+    "nprogress": "^0.2.0",
+    "pinia": "^2.0.22",
+    "vue": "^3.2.13",
+    "vue-qr": "^4.0.9",
+    "vue-router": "4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "sass": "^1.54.9",
+    "sass-loader": "^13.0.2",
+    "svgo": "^2.8.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}
