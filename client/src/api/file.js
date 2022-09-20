@@ -26,7 +26,7 @@ export function updateFile(params) {
 
 export function delManyFile(file_id_list) {
     return request({
-        url: '/many',
+        url: '/many/file',
         method: 'post',
         data: {action: 'delete', file_id_list}
     })
@@ -34,8 +34,15 @@ export function delManyFile(file_id_list) {
 
 export function downloadManyFile(file_id_list) {
     return request({
-        url: '/many',
+        url: '/many/file',
         method: 'post',
         data: {action: 'download', file_id_list}
+    })
+}
+
+export function getDownloadUrl(id) {
+    return request({
+        url: '/download/' + id,
+        method: 'get',
     })
 }

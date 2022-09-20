@@ -50,3 +50,4 @@ class DownloadView(ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         return ApiResponse(code=1001, msg='获取失败')
+

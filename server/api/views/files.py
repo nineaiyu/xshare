@@ -11,7 +11,7 @@ from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
 
-from api.models import FileInfo, AliyunDrive
+from api.models import FileInfo, AliyunDrive, ShareCode
 from api.utils.serializer import FileInfoSerializer
 from common.core.filter import OwnerUserFilter
 from common.core.modelset import BaseModelSet
@@ -52,33 +52,50 @@ class FileInfoView(BaseModelSet):
         return ApiResponse(code=1001, msg='添加失败')
 
 
-class FileManyView(APIView):
+class ManyView(APIView):
 
-    def post(self, request):
-        action = request.data.get('action', '')
-        file_id_list = request.data.get('file_id_list', [])
-        if action in ['delete', 'download'] and file_id_list:
-            drive_obj_dict = {}
-            for file_obj in FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).all():
-                drive_user_id = file_obj.aliyun_drive_id.user_id
-                drive_obj = drive_obj_dict.get(drive_user_id)
-                if not drive_obj:
-                    drive_obj_dict[drive_user_id] = [file_obj.file_id]
-                else:
-                    drive_obj_dict[drive_user_id].append(file_obj.file_id)
+    def get(self, request, name):
+        if name == 'share':
+            short = request.query_params.get('short')
+            if short:
+                share_obj = ShareCode.objects.filter(owner_id=request.user, short=short).first()
+                serializer = FileInfoSerializer(share_obj.file_id.all(), many=True)
+                return ApiResponse(data=serializer.data)
+        return ApiResponse(code=1001, msg='操作失败')
 
-            for drive_user_id, file_info_list in drive_obj_dict.items():
-                drive_obj = AliyunDrive.objects.filter(user_id=drive_user_id, active=True, enable=True).first()
-                if drive_obj:
-                    ali_obj = Aligo(drive_obj)
-                    if action == 'delete':
-                        ali_obj.batch_move_to_trash(file_info_list)
-                        FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).delete()
-                        return ApiResponse()
-                    elif action == 'download':
-                        result_list = ali_obj.batch_get_files(file_info_list)
-                        download_url_list = [result.download_url if result.download_url else result.url for result in
-                                             result_list]
-                        return ApiResponse(data=download_url_list)
+    def post(self, request, name):
+        if name == 'file':
+            action = request.data.get('action', '')
+            file_id_list = request.data.get('file_id_list', [])
+            if action in ['delete', 'download'] and file_id_list:
+                drive_obj_dict = {}
+                for file_obj in FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).all():
+                    drive_user_id = file_obj.aliyun_drive_id.user_id
+                    drive_obj = drive_obj_dict.get(drive_user_id)
+                    if not drive_obj:
+                        drive_obj_dict[drive_user_id] = [file_obj.file_id]
+                    else:
+                        drive_obj_dict[drive_user_id].append(file_obj.file_id)
 
+                for drive_user_id, file_info_list in drive_obj_dict.items():
+                    drive_obj = AliyunDrive.objects.filter(user_id=drive_user_id, active=True, enable=True).first()
+                    if drive_obj:
+                        ali_obj = Aligo(drive_obj)
+                        if action == 'delete':
+                            ali_obj.batch_move_to_trash(file_info_list)
+                            FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).delete()
+                            return ApiResponse()
+                        elif action == 'download':
+                            result_list = ali_obj.batch_get_files(file_info_list)
+                            download_url_list = [result.download_url if result.download_url else result.url for result
+                                                 in
+                                                 result_list]
+                            return ApiResponse(data=download_url_list)
+
+        elif name == 'share':
+            action = request.data.get('action', '')
+            share_id_list = request.data.get('share_id_list', [])
+            if action in ['delete', ] and share_id_list:
+                ShareCode.objects.filter(owner_id=request.user, short__in=share_id_list).delete()
+                return ApiResponse()
         return ApiResponse(code=1001, msg='操作失败')

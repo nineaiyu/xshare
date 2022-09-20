@@ -1,16 +1,10 @@
 import request from '@/utils/request'
 
-export function getDownloadUrl(id) {
+
+export function getFileShare(short) {
     return request({
-        url: '/download/' + id,
+        url: '/short',
         method: 'get',
+        params: {short: short}
     })
 }
-
-export function getFileDownloadUrl(id) {
-    return request({
-        url: '/download/' + id,
-        method: 'get',
-    })
-}
-

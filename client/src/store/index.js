@@ -57,5 +57,6 @@ export const menuStore = defineStore('menu', {
 export const uploadProgressStore = defineStore('progress', {
     state: () => ({
         progress: '',
+        speed: ''
     }),
 })

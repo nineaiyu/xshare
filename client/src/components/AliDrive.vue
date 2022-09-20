@@ -100,10 +100,10 @@
             <el-button size="small" @click="updateDrive(scope.row)">保存</el-button>
           </div>
           <template #reference>
-            <el-link>
+            <el-link :underline="false">
               <el-icon @click="scope.row.visible=true">
                 <EditPen/>
-              </el-icon>
+              </el-icon>&nbsp;&nbsp;
             </el-link>
           </template>
         </el-popover>
@@ -203,10 +203,14 @@ export default {
         this.total = res.data.count
         this.isLoading = false
       })
-    }, tableRowClassName(row) {
-      if (!row.active || row.enable) {
+      // eslint-disable-next-line no-unused-vars
+    }, tableRowClassName({row, index}) {
+      if (row.active && row.enable) {
+        return 'success-row'
+      } else if (row.enable && !row.active) {
         return 'warning-row'
-      }
+      } else
+        return ''
     }, totalFormatter(row) {
       return diskSize(row.total_size)
     }, usedFormatter(row) {

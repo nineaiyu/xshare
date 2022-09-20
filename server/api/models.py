@@ -66,7 +66,8 @@ class ShareCode(models.Model):
     short = models.CharField(max_length=16, unique=True, verbose_name="短链接", db_index=True)
     created_time = models.DateTimeField(verbose_name="创建时间", auto_now_add=True)
     expired_time = models.DateTimeField(verbose_name="失效时间", null=True)
-    password = models.CharField(max_length=16, verbose_name="访问密码", null=True)
+    password = models.CharField(max_length=16, verbose_name="访问密码", null=True, blank=True)
+    description = models.CharField(max_length=256, verbose_name="备注信息", blank=True)
 
     class Meta:
         verbose_name = '分享信息'

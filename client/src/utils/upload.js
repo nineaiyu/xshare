@@ -4,7 +4,7 @@ import {ElMessage} from "element-plus";
 import {uploadProgressStore} from "@/store";
 import CryptoJs from 'crypto-js'
 import encHex from 'crypto-js/enc-hex'
-import {BlobToArrayBuffer} from "@/utils/index";
+import {BlobToArrayBuffer, upSpeed} from "@/utils/index";
 
 // eslint-disable-next-line no-unused-vars
 function hashFileInternal(file, alog = CryptoJs.algo.SHA1.create()) {
@@ -131,6 +131,7 @@ async function ChunkedUpload(fileInfo, file, uploadExtra, partInfo, progress) {
     ElMessage.info(fileInfo.file_name + ' 不支持秒传，正在分块上传中')
     let index = 0
     let count = 0
+    const start_time = Date.now();
     const chunkSize = uploadExtra.part_size
     for (let start = 0; start < file.size; start += chunkSize) {
         const chunk = file.slice(start, start + chunkSize + 1);
@@ -138,6 +139,7 @@ async function ChunkedUpload(fileInfo, file, uploadExtra, partInfo, progress) {
 
         let res = await fetchProgress(partInfo[index].upload_url, {method: "put", body: chunk}, pr => {
             progress.progress = Math.ceil((pr.loaded + index * chunkSize) * 100 / file.size)
+            progress.speed = upSpeed(start_time, file.size, progress.progress)
         })
         if (res.status !== 200) {
             count += 1

@@ -36,6 +36,18 @@ const routes = [
         path: '/drive',
         name: 'drive',
         component: () => import('@/components/AliDrive')
+    }, {
+        path: '/share',
+        name: 'share',
+        component: () => import('@/components/FileShare')
+    }, {
+        path: '/files',
+        name: 'files',
+        component: () => import('@/components/FileManager')
+    }, {
+        path: '/:short',
+        name: 'short',
+        component: () => import('@/components/FileDownload')
     }
 
 ]
@@ -48,7 +60,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     // start progress bar
     NProgress.start()
-    const menuList = ['lobby', 'upload', 'files', 'drive']
+    const menuList = ['lobby', 'upload', 'files', 'drive', 'share']
     const menu = menuStore()
     if (menuList.indexOf(to.name) !== -1) {
         menu.activeIndex = to.name
