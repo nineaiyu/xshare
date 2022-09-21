@@ -71,7 +71,7 @@
           <el-table-column :formatter="sizeFormatter" align="center" label="文件大小" prop="size" width="90"/>
 
           <el-table-column :formatter="uptimeFormatter" align="center" label="上传时间" prop="created_at"/>
-          <el-table-column align="center" label="下载次数" prop="downloads" width="100"/>
+          <el-table-column align="center" label="下载次数" prop="downloads" width="90"/>
           <el-table-column align="center" label="备注" prop="description"/>
           <el-table-column align="center" label="操作" width="110">
             <template #default="scope">

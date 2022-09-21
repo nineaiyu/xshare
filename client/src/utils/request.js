@@ -1,6 +1,8 @@
 import axios from 'axios'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {getToken, removeToken} from '@/utils/auth'
+import {getAccessToken, getRefreshToken, removeToken, setToken} from '@/utils/auth'
+import {refreshToken} from "@/api/user";
+import {tokenStore} from "@/store";
 
 // create an axios instance
 const service = axios.create({
@@ -14,7 +16,7 @@ const service = axios.create({
 service.interceptors.request.use(
     config => {
         // do something before request is sent
-        config.headers['Authorization'] = 'Bearer ' + getToken()
+        config.headers['Authorization'] = 'Bearer ' + getAccessToken()
         return config
     },
     error => {
@@ -47,6 +49,12 @@ service.interceptors.response.use(
                 duration: 5 * 1000
             })
 
+            if (res.code === 9999) {
+                setTimeout(() => {
+                    location.reload()
+                }, 500)
+            }
+
             // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
             if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
                 // to re-login
@@ -60,16 +68,31 @@ service.interceptors.response.use(
                     // })
                 })
             }
-            return Promise.reject(new Error(res.message || 'Error'))
+            return Promise.reject(res)
         } else {
             return res
         }
     },
     error => {
-        console.log(error)
+        const token = tokenStore()
         if (error.response.status === 401) {
-            removeToken()
-            location.reload()
+            const RefreshToken = getRefreshToken()
+            if (RefreshToken) {
+                token.count += 1
+                refreshToken({refresh: RefreshToken}).then(res => {
+                    setToken(res.data)
+                    if (token.count > 2) {
+                        removeToken()
+                        token.count = 0
+                    } else {
+                        location.reload()
+                    }
+                }).catch(() => {
+                    removeToken()
+                    token.count = 0
+                    location.reload()
+                })
+            }
         }
         console.log('err' + error) // for debug
         ElMessage({

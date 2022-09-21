@@ -28,7 +28,6 @@ export default {
     window.onresize = function () {
       that.minHeight = document.documentElement.clientHeight - 30
     }
-    console.log(this.minHeight)
   }
 }
 </script>

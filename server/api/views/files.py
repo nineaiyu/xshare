@@ -70,15 +70,14 @@ class ManyView(APIView):
             action = request.data.get('action', '')
             file_id_list = request.data.get('file_id_list', [])
             if action in ['delete', 'download'] and file_id_list:
-
                 file_obj_list = FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).all()
-
-                if action == 'download':
-                    return ApiResponse(data=batch_get_download_url(file_obj_list))
-                elif action == 'delete':
-                    batch_delete_file(file_obj_list)
-                    FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).delete()
-                    return ApiResponse()
+                if file_obj_list:
+                    if action == 'download':
+                        return ApiResponse(data=batch_get_download_url(file_obj_list))
+                    elif action == 'delete':
+                        batch_delete_file(file_obj_list)
+                        FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).delete()
+                        return ApiResponse()
 
         elif name == 'share':
             action = request.data.get('action', '')

@@ -25,7 +25,6 @@ function hashFileInternal(file, alog = CryptoJs.algo.SHA1.create()) {
             reader.onload = ({target}) => {
                 const wordArray = CryptoJs.lib.WordArray.create(target.result)
                 // 增量更新计算结果
-                console.log(wordArray)
                 alog.update(wordArray)
                 resolve()
             }
@@ -152,7 +151,6 @@ async function ChunkedUpload(fileInfo, file, uploadExtra, partInfo, progress) {
     if (count === 0) {
         uploadComplete(fileInfo).then(res => {
             if (res.data.check_status === true) {
-                console.log(fileInfo.file_name + ' 上传成功')
                 progress.progress = ''
                 ElMessage.success(fileInfo.file_name + ' 上传成功')
             } else {

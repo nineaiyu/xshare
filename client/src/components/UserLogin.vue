@@ -50,6 +50,8 @@
 <script>
 import {userinfoStore} from "@/store";
 import {mapActions} from "pinia/dist/pinia";
+import {getToken} from "@/api/user";
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
 export default {
   name: "UserLogin",
@@ -82,16 +84,30 @@ export default {
       capsTooltip: false,
       loading: false,
       otherQuery: {},
+      loginData: {},
+      client_id: '',
     }
   }, methods: {
+    // 获取浏览器的唯一标识符
+    createFingerprint() {
+      const fpPromise = FingerprintJS.load()
+      fpPromise.then(fp => {
+        fp.get().then(res => {
+          this.client_id = res.visitorId
+          getToken({client_id: res.visitorId}).then(res => {
+            this.loginData = res.data
+            this.loginData.client_id = this.client_id
+          })
+        })
+      })
+    },
+
     checkCapslock(e) {
       const {key} = e
       this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
     }, handleLogin() {
-      console.log('login')
       this.loading = true
-      // eslint-disable-next-line no-unused-vars
-      this.login(this.loginForm).then(() => {
+      this.login(this.loginForm, this.loginData).then(() => {
         this.$router.push({path: this.redirect || '/', query: this.otherQuery})
         this.loading = false
       }).catch(() => {
@@ -117,7 +133,9 @@ export default {
       },
       immediate: true
     }
-  },
+  }, mounted() {
+    this.createFingerprint()
+  }
 }
 </script>
 

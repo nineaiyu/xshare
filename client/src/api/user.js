@@ -8,6 +8,15 @@ export function login(data) {
     })
 }
 
+export function getToken(params) {
+    return request({
+        url: '/login',
+        method: 'get',
+        params
+    })
+}
+
+
 export function getUserInfo() {
     return request({
         url: '/userinfo',
@@ -24,7 +33,7 @@ export function logout() {
 
 export function refreshToken(data) {
     return request({
-        url: '/token/refresh',
+        url: '/refresh',
         method: 'post',
         data
     })

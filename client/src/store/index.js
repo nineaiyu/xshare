@@ -1,7 +1,5 @@
 import {defineStore} from 'pinia'
-// eslint-disable-next-line no-unused-vars
-import {getRefreshToken, getToken, setToken} from '@/utils/auth'
-// eslint-disable-next-line no-unused-vars
+import {getAccessToken, getRefreshToken, setToken} from '@/utils/auth'
 import {getUserInfo, login} from '@/api/user'
 
 export const userinfoStore = defineStore('userinfo', {
@@ -10,24 +8,19 @@ export const userinfoStore = defineStore('userinfo', {
         first_name: '',
         email: '',
         last_login: '',
-        token: getToken(),
+        token: getAccessToken(),
         refreshToken: getRefreshToken()
     }),
-    getters: {
-        // nickname: (state) => state.nickname,
-        // avatar: (state) => state.avatar,
-        // token: (state) => state.token,
-    },
     actions: {
-        async login(userInfo) {
+        async login(userInfo, loginData) {
             const {username, password} = userInfo
             return new Promise((resolve, reject) => {
-                login({username: username.trim(), password: password.trim()}).then(response => {
+                login({
+                    username: username.trim(), password: password.trim(), token: loginData.token,
+                    client_id: loginData.client_id
+                }).then(response => {
                     const {data} = response
-                    console.log(data)
-                    this.token = data.access
-                    this.refreshToken = data.refresh
-                    setToken(data.access, data.refresh)
+                    setToken(data)
                     resolve()
                 }).catch(error => {
                     reject(error)
@@ -51,6 +44,11 @@ export const userinfoStore = defineStore('userinfo', {
 export const menuStore = defineStore('menu', {
     state: () => ({
         activeIndex: '',
+    }),
+})
+export const tokenStore = defineStore('token', {
+    state: () => ({
+        count: 0,
     }),
 })
 

@@ -1,10 +1,10 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
-// import { ElMessage } from 'element-plus'
-import {getToken} from '@/utils/auth'
+import {getAccessToken, getRefreshToken, setToken} from '@/utils/auth'
 
 import {menuStore, userinfoStore} from "@/store";
+import {refreshToken} from "@/api/user";
 
 
 NProgress.configure({showSpinner: false})
@@ -65,9 +65,8 @@ router.beforeEach(async (to, from, next) => {
     if (menuList.indexOf(to.name) !== -1) {
         menu.activeIndex = to.name
     }
-
-    const hasToken = getToken()
-    if (hasToken) {
+    const accessToken = getAccessToken()
+    if (accessToken) {
         if (to.path === '/login') {
             // if is logged in, redirect to the home page
             next({path: '/'})
@@ -86,12 +85,19 @@ router.beforeEach(async (to, from, next) => {
         }
     } else {
         /* has no token*/
+        const RefreshToken = getRefreshToken()
+        if (RefreshToken) {
+            const res = await refreshToken({refresh: RefreshToken})
+            setToken(res.data)
+            next()
+            NProgress.done()
+            return
+        }
 
         if (whiteList.indexOf(to.path) !== -1) {
             // in the free login whitelist, go directly
             next()
             NProgress.done()
-
         } else {
             // other pages that do not have permission to access are redirected to the login page.
             next(`/login?redirect=${to.path}`)

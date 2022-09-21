@@ -281,7 +281,6 @@ export default {
     },
     downloadFile(id) {
       getDownloadUrl(id).then(res => {
-        console.log(res)
         downloadFile(res.data.download_url)
       })
     },

@@ -10,18 +10,9 @@ import logging
 from django.db.models import Sum
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-logger = logging.getLogger(__file__)
 from api import models
 
-
-class TokenObtainSerializer(TokenObtainPairSerializer):
-
-    def get_token(self, user):
-        token = super().get_token(user)
-        token['name'] = user.username
-        return token
+logger = logging.getLogger(__file__)
 
 
 class AliyunDriveSerializer(serializers.ModelSerializer):
@@ -74,18 +65,6 @@ class ShareCodeSerializer(serializers.ModelSerializer):
 
     def get_count(self, obj):
         return obj.file_id.count()
-    # expired_time = serializers.DateTimeField()
-    #
-    # def validate_expired_time(self, attrs):
-    #     logger.error(attrs)
-    #     return attrs
-    #
-    # def validate(self, data):
-    #     """
-    #     Check that start is before finish.
-    #     """
-    #     logger.error(data)
-    #     return data
 
 
 class ShortSerializer(ShareCodeSerializer):
