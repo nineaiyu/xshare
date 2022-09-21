@@ -13,17 +13,6 @@
       <el-form-item label="文件数量">
         <el-tag>{{ selectedData.length }}</el-tag>
       </el-form-item>
-      <el-form-item label="下载连接">
-        <el-input v-model="formShare.short"
-                  clearable
-                  maxlength="16"
-                  minlength="6"
-                  placeholder="空表示自动生成"
-                  show-word-limit
-        >
-          <template #prepend>{{ prefixUrl }}</template>
-        </el-input>
-      </el-form-item>
       <el-form-item label="下载密码">
         <div style="margin-right: 20px">
           <el-input v-model="formShare.password"
@@ -134,9 +123,8 @@
     </el-table-column>
     <el-table-column align="center" label="操作">
       <template #default="scope">
-        <el-button size="small" @click="downloadFile(scope.row.id)"
-        >下载文件
-        </el-button>
+        <el-button size="small" @click="shareFile(scope.row)">分享</el-button>
+        <el-button size="small" @click="downloadFile(scope.row)">下载文件</el-button>
         <el-button
             size="small"
             type="danger"
@@ -218,16 +206,18 @@ export default {
         ordering: sortOptions[1].key,
         description: null
       }, formShare: {
-        short: null,
         expired_time: date.getTime() + 3600 * 1000 * 24 * 7,
         password: '',
         description: '',
       }
     }
   }, methods: {
+    shareFile(row) {
+      this.selectedData = [row]
+      this.showShareDialog()
+    },
     showShareDialog() {
       if (this.selectedData && this.selectedData.length > 0) {
-        this.formShare.short = null
         this.formShare.password = ''
         this.formShare.description = ''
         this.shareVisible = true
@@ -248,7 +238,7 @@ export default {
     downManyFileFun() {
       downloadManyFile(this.getFileIdList()).then(res => {
         res.data.forEach(url => {
-          downloadFile(url)
+          downloadFile(url.download_url)
         })
       })
     },
@@ -327,8 +317,8 @@ export default {
         this.getTableData()
       })
     },
-    downloadFile(id) {
-      getDownloadUrl(id).then(res => {
+    downloadFile(row) {
+      getDownloadUrl(row.id).then(res => {
         downloadFile(res.data.download_url)
       })
     },

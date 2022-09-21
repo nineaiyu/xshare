@@ -17,8 +17,8 @@ import logging
 from django.utils import timezone
 from rest_framework.views import APIView
 
-from api.models import FileInfo, AliyunDrive, ShareCode
-from api.utils.serializer import FileInfoSerializer, ShareCodeSerializer
+from api.models import ShareCode
+from api.utils.serializer import ShortSerializer
 from common.core.response import ApiResponse
 
 logger = logging.getLogger(__file__)
@@ -27,9 +27,11 @@ logger = logging.getLogger(__file__)
 class ShortView(APIView):
     permission_classes = []
 
+    # @CacheResponse(timeout=60)
     def get(self, request):
         query_params = request.query_params
         short = query_params.get('short')
+        password = query_params.get('password')
         if short:
             default_timezone = timezone.get_default_timezone()
             value = timezone.make_aware(datetime.datetime.now(), default_timezone)
@@ -40,6 +42,6 @@ class ShortView(APIView):
                         'head_img': 'https://static.wenshushu.cn/pf/1cnk77fx8rs/img',
                         'first_name': '谁许时光逝年华'
                     },
-                    'share_info': ShareCodeSerializer(share_obj).data
+                    'share_info': ShortSerializer(share_obj, context={'password': password}).data
                 })
         return ApiResponse(code=1001, msg='链接失效')

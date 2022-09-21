@@ -28,8 +28,23 @@
             <el-avatar :size="80" :src="userInfo.head_img"/>
           </div>
           <div><i style="color: teal">{{ userInfo.first_name }}</i></div>
-          <div>
-            <el-button color="#626aef" icon="Download" plain @click="downloadShare">全部下载</el-button>
+          <div style="margin: 0 10px">
+            <div v-if="shareInfo.need_password">
+              <el-row>
+                <el-col :span="14">
+                  <el-input
+                      v-model="password"
+                      clearable
+                      placeholder="请输入密码"
+                      prefix-icon="Lock"/>
+                </el-col>
+                <el-col :span="1"></el-col>
+                <el-col :span="6">
+                  <el-button @click="getShareInfo">提取文件</el-button>
+                </el-col>
+              </el-row>
+            </div>
+            <el-button v-else color="#626aef" icon="Download" plain @click="downloadShare">全部下载</el-button>
           </div>
         </el-col>
         <el-col :span="8">
@@ -79,6 +94,7 @@ export default {
   data() {
     return {
       short: '',
+      password: '',
       shareInfo: {
         file_info_list: []
       },
@@ -99,7 +115,7 @@ export default {
     downloadShare() {
       downloadManyFile(this.getFileIdList()).then(res => {
         res.data.forEach(url => {
-          downloadFile(url)
+          downloadFile(url.download_url)
         })
       })
     },
@@ -111,10 +127,12 @@ export default {
     diskSize,
     formatTime,
     getShareInfo() {
-      getFileShare(this.short).then(res => {
+      getFileShare({short: this.short, password: this.password}).then(res => {
         this.userInfo = res.data.user_info
         this.shareInfo = res.data.share_info
-        console.log(res)
+        if (this.shareInfo.file_info_list.length > 0) {
+          this.shareInfo.need_password = false
+        }
       })
     }, uptimeFormatter(row) {
       return formatTime(row.created_at)
@@ -124,6 +142,7 @@ export default {
   },
   mounted() {
     this.short = this.$route.params.short
+    this.password = this.$route.query.password
     this.getShareInfo()
   }
 }

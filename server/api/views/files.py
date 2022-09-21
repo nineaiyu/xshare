@@ -6,13 +6,14 @@
 # date : 2022/9/18
 import logging
 
-from common.libs.alidrive import Aligo
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
 
-from api.models import FileInfo, AliyunDrive, ShareCode
+from api.models import FileInfo, ShareCode
+from api.utils.model import batch_get_download_url, batch_delete_file, get_aliyun_drive
 from api.utils.serializer import FileInfoSerializer
+from common.cache.storage import DownloadUrlCache
 from common.core.filter import OwnerUserFilter
 from common.core.modelset import BaseModelSet
 from common.core.response import PageNumber, ApiResponse
@@ -42,8 +43,9 @@ class FileInfoView(BaseModelSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        ali_obj = Aligo(instance.aliyun_drive_id)
+        ali_obj = get_aliyun_drive(instance.aliyun_drive_id)
         result = ali_obj.move_file_to_trash(instance.file_id)
+        DownloadUrlCache(instance.drive_id, instance.file_id).del_storage_cache()
         logger.debug(f'{instance.aliyun_drive_id} move {instance} to trash.result:{result}')
         self.perform_destroy(instance)
         return ApiResponse()
@@ -68,29 +70,15 @@ class ManyView(APIView):
             action = request.data.get('action', '')
             file_id_list = request.data.get('file_id_list', [])
             if action in ['delete', 'download'] and file_id_list:
-                drive_obj_dict = {}
-                for file_obj in FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).all():
-                    drive_user_id = file_obj.aliyun_drive_id.user_id
-                    drive_obj = drive_obj_dict.get(drive_user_id)
-                    if not drive_obj:
-                        drive_obj_dict[drive_user_id] = [file_obj.file_id]
-                    else:
-                        drive_obj_dict[drive_user_id].append(file_obj.file_id)
 
-                for drive_user_id, file_info_list in drive_obj_dict.items():
-                    drive_obj = AliyunDrive.objects.filter(user_id=drive_user_id, active=True, enable=True).first()
-                    if drive_obj:
-                        ali_obj = Aligo(drive_obj)
-                        if action == 'delete':
-                            ali_obj.batch_move_to_trash(file_info_list)
-                            FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).delete()
-                            return ApiResponse()
-                        elif action == 'download':
-                            result_list = ali_obj.batch_get_files(file_info_list)
-                            download_url_list = [result.download_url if result.download_url else result.url for result
-                                                 in
-                                                 result_list]
-                            return ApiResponse(data=download_url_list)
+                file_obj_list = FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).all()
+
+                if action == 'download':
+                    return ApiResponse(data=batch_get_download_url(file_obj_list))
+                elif action == 'delete':
+                    batch_delete_file(file_obj_list)
+                    FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).delete()
+                    return ApiResponse()
 
         elif name == 'share':
             action = request.data.get('action', '')

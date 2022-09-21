@@ -15,7 +15,7 @@ from common.libs.alidrive.types import Token, DataClass
 
 def get_token_from_db(drive_obj):
     fields = ['user_name', 'nick_name', 'user_id', 'default_drive_id', 'default_sbox_drive_id', 'access_token',
-              'refresh_token', 'avatar']
+              'refresh_token', 'avatar', 'expire_time']
     for f in fields:
         setattr(Token, f, getattr(drive_obj, f))
     return Token
@@ -23,7 +23,7 @@ def get_token_from_db(drive_obj):
 
 def save_token_to_db(drive_obj, token):
     fields = ['user_name', 'nick_name', 'user_id', 'default_drive_id', 'default_sbox_drive_id', 'access_token',
-              'refresh_token', 'avatar']
+              'refresh_token', 'avatar', 'expire_time']
     defaults = {'owner_id': drive_obj.owner_id}
     for f in fields:
         defaults[f] = getattr(token, f)

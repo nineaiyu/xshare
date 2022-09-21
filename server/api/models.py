@@ -16,6 +16,7 @@ class AliyunDrive(models.Model):
     access_token = AESCharField(max_length=1536, verbose_name="访问token")
     refresh_token = AESCharField(max_length=512, verbose_name="刷新token")
     avatar = models.CharField(max_length=512, verbose_name="头像地址")
+    expire_time = models.DateTimeField(verbose_name="过期信息", auto_now_add=True)
 
     used_size = models.BigIntegerField(verbose_name="已经使用空间", default=0)
     total_size = models.BigIntegerField(verbose_name="总空间大小", default=0)

@@ -8,11 +8,11 @@ import json
 import logging
 import time
 
-from common.libs.alidrive import Aligo
 from django.db.models import F
 from rest_framework.views import APIView
 
 from api.models import FileInfo, AliyunDrive
+from api.utils.model import get_aliyun_drive
 from common.base.utils import AesBaseCrypt
 from common.core.response import ApiResponse
 
@@ -73,7 +73,7 @@ class AliyunDriveUploadView(APIView):
                 drive_obj = drive_queryset.filter(private=False).order_by('created_time').first()
                 if not drive_obj:
                     return ApiResponse(code=1002, msg='暂无可用存储')
-            ali_obj = Aligo(drive_obj)
+            ali_obj = get_aliyun_drive(drive_obj)
             if action == 'pre_hash':
                 part_info, check_status = ali_obj.pre_hash_check(file_info)
                 logger.error(f'{file_info.get("file_name")} pre_hash check {part_info}')

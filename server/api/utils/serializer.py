@@ -69,6 +69,11 @@ class ShareCodeSerializer(serializers.ModelSerializer):
 
     def get_size(self, obj):
         return obj.file_id.all().aggregate(size=Sum('size')).get('size', 0)
+
+    count = serializers.SerializerMethodField()
+
+    def get_count(self, obj):
+        return obj.file_id.count()
     # expired_time = serializers.DateTimeField()
     #
     # def validate_expired_time(self, attrs):
@@ -81,3 +86,20 @@ class ShareCodeSerializer(serializers.ModelSerializer):
     #     """
     #     logger.error(data)
     #     return data
+
+
+class ShortSerializer(ShareCodeSerializer):
+    class Meta:
+        model = models.ShareCode
+        exclude = ["owner_id", "file_id", "id", "short", "password"]
+        read_only_fields = [x.name for x in models.ShareCode._meta.fields]
+
+    def get_file_info_list(self, obj):
+        if obj.password and not obj.password == self.context.get('password'):
+            return []
+        return FileInfoSerializer(obj.file_id.all(), many=True).data
+
+    need_password = serializers.SerializerMethodField()
+
+    def get_need_password(self, obj):
+        return bool(obj.password)

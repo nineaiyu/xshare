@@ -54,26 +54,34 @@
         </div>
       </template>
     </el-table-column>
-    <el-table-column align="center" label="短连接" prop="short">
+    <el-table-column align="center" label="短连接" prop="short" width="100">
       <template #default="scope">
         <el-popover v-if="!scope.row.is_expired"
                     :width="200"
                     placement="top-start"
                     trigger="hover">
           <template #reference>
-            <el-link :underline="false" @click="$router.push({name:'short',params :{short:scope.row.short}})">
+            <el-link :underline="false"
+                     @click="$router.push({name:'short',params :{short:scope.row.short},query:{password:scope.row.password}})">
               {{ scope.row.short }}
             </el-link>
           </template>
           点击跳转下载页或
-          <el-link :underline='false' @click="handleCopy(makeShortUrl(scope.row.short),$event)"><span
+          <el-link :underline='false'
+                   @click="handleCopy(`${makeShortUrl(scope.row.short)}?password=${scope.row.password}`,$event)"><span
               style="color: teal">复制</span></el-link>
           下载页连接
         </el-popover>
-        <span v-else>{{ scope.row.short }}</span>
+        <el-tooltip v-else placement="top">
+          <template #content>
+            分享已过期
+          </template>
+          <span>{{ scope.row.short }}</span>
+        </el-tooltip>
       </template>
     </el-table-column>
     <el-table-column :formatter="sizeFormatter" align="center" label="大小" prop="total_size" width="90"/>
+    <el-table-column align="center" label="文件数量" prop="count" width="60"/>
     <el-table-column :formatter="timeFormatter" align="center" label="分享时间" prop="created_time"/>
     <el-table-column :formatter="expireTimeFormatter" align="center" label="过期时间" prop="expired_time">
       <template #default="scope">
@@ -132,7 +140,12 @@
             </el-link>
           </template>
         </el-popover>
-        <span>{{ scope.row.password }}</span>
+        <el-tooltip placement="top">
+          <template #content>
+            点击复制密码
+          </template>
+          <span @click="handleCopy(scope.row.password,$event)">{{ scope.row.password }}</span>
+        </el-tooltip>
       </template>
     </el-table-column>
     <el-table-column align="center" label="备注" prop="description">
@@ -268,6 +281,7 @@ export default {
     },
     downloadFile(id) {
       getDownloadUrl(id).then(res => {
+        console.log(res)
         downloadFile(res.data.download_url)
       })
     },
@@ -281,7 +295,7 @@ export default {
     downloadShare(row) {
       downloadManyFile(this.getFileIdList(row)).then(res => {
         res.data.forEach(url => {
-          downloadFile(url)
+          downloadFile(url.download_url)
         })
       })
     },

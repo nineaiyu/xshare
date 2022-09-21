@@ -5,8 +5,6 @@
 # author : ly_13
 # date : 2022/9/17
 
-import base64
-import json
 import logging
 
 from django.core.cache import cache
@@ -58,14 +56,9 @@ class RedisCacheBase(object):
         return True
 
 
-class CloudStorageCache(RedisCacheBase):
-    def __init__(self, auth, uid):
-        if auth == '*':
-            bid = auth
-        else:
-            bid = base64.b64encode(json.dumps(auth).encode("utf-8")).decode("utf-8")[0:64]
-        self.cache_key = f"xxxxxxxxxxx_{uid}_{bid}"
-
+class AliDriveCache(RedisCacheBase):
+    def __init__(self, user_id):
+        self.cache_key = f"{CACHE_KEY_TEMPLATE.get('aliyun_drive_auth_key')}_{user_id}"
         super().__init__(self.cache_key)
 
 
@@ -90,4 +83,10 @@ class UploadPartInfoCache(RedisCacheBase):
 class DriveQrCache(RedisCacheBase):
     def __init__(self, locker_key):
         self.cache_key = f"{CACHE_KEY_TEMPLATE.get('drive_qrcode_key')}_{locker_key}"
+        super().__init__(self.cache_key)
+
+
+class DownloadUrlCache(RedisCacheBase):
+    def __init__(self, drive_id, file_id):
+        self.cache_key = f"{CACHE_KEY_TEMPLATE.get('download_url_key')}_{drive_id}_{file_id}"
         super().__init__(self.cache_key)

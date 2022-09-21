@@ -68,12 +68,8 @@ class ShareCodeView(BaseModelSet):
         if file_id_list and share_info:
             file_id_list_obj = FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list)
             if file_id_list_obj:
-                short = share_info.get('short')
-                if short and len(short) > 5:
-                    if ShareCode.objects.filter(short=short).count():
-                        short = get_random_short(number=6)
                 share_info['owner_id'] = request.user
-                share_info['short'] = short if short else get_random_short(number=6)
+                share_info['short'] = get_random_short(number=6)
                 expired_time = share_info.get('expired_time')
                 if expired_time:
                     try:

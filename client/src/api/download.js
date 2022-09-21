@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 
 
-export function getFileShare(short) {
+export function getFileShare(params) {
     return request({
         url: '/short',
         method: 'get',
-        params: {short: short}
+        params: params
     })
 }

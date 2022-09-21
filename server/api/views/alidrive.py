@@ -6,16 +6,16 @@
 # date : 2022/9/13
 import logging
 
-from common.libs.alidrive import Aligo
 from common.libs.alidrive.core.Auth import Auth
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
 
 from api.models import AliyunDrive, FileInfo
+from api.utils.model import get_aliyun_drive
 from api.utils.serializer import AliyunDriveSerializer
 from common.base.utils import AesBaseCrypt
-from common.cache.storage import DriveQrCache
+from common.cache.storage import DriveQrCache, DownloadUrlCache
 from common.core.filter import OwnerUserFilter
 from common.core.modelset import BaseModelSet
 from common.core.response import PageNumber, ApiResponse
@@ -35,7 +35,6 @@ class AliyunDriveFilter(filters.FilterSet):
 
 
 class AliyunDriveView(BaseModelSet):
-    # permission_classes = []
     queryset = AliyunDrive.objects.all()
     serializer_class = AliyunDriveSerializer
     pagination_class = PageNumber
@@ -46,10 +45,11 @@ class AliyunDriveView(BaseModelSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        ali_obj = Aligo(instance)
+        ali_obj = get_aliyun_drive(instance)
         file_id_list = [file.get('file_id') for file in
                         FileInfo.objects.filter(aliyun_drive_id=instance).values('file_id').all()]
         result_list = ali_obj.batch_move_to_trash(file_id_list)
+        DownloadUrlCache(instance.default_drive_id, '*').del_many()
         logger.debug(f'{instance} move {file_id_list} to trash.result:{result_list}')
         self.perform_destroy(instance)
         return ApiResponse()
@@ -85,7 +85,7 @@ class AliyunDriveQRView(APIView):
             if status and result.get('data', {}).get('code') == 0:
                 ali_drive_obj = AliyunDrive.objects.filter(owner_id=request.user,
                                                            user_id=ali_auth.token.user_id).first()
-                ali_obj = Aligo(ali_drive_obj)
+                ali_obj = get_aliyun_drive(ali_drive_obj)
                 default_drive_obj = ali_obj.get_default_drive()
                 ali_drive_obj.total_size = default_drive_obj.total_size
                 ali_drive_obj.used_size = default_drive_obj.used_size

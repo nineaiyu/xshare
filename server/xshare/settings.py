@@ -122,7 +122,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    # 'EXCEPTION_HANDLER': 'common.core.exception.common_exception_handler',
+    'EXCEPTION_HANDLER': 'common.core.exception.common_exception_handler',
     'DEFAULT_THROTTLE_CLASSES': [
         'common.core.throttle.LoginUserThrottle',
     ],
@@ -302,4 +302,6 @@ CACHE_KEY_TEMPLATE = {
     'upload_part_info_key': 'upload_part_info',
     'make_token_key': 'make_token',
     'drive_qrcode_key': 'drive_qrcode',
+    'download_url_key': 'download_url',
+    'aliyun_drive_auth_key': 'aliyun_drive_auth',
 }
