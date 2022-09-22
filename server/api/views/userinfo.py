@@ -5,12 +5,11 @@
 # author : ly_13
 # date : 2022/9/13
 from django.conf import settings
-from django.contrib import auth
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from api.utils.serializer import UserInfoSerializer
+from api.utils.serializer import UserInfoSerializer, UserInfoUpdateSerializer
 from common.core.response import ApiResponse
 from common.utils.token import make_token, verify_token
 
@@ -27,7 +26,7 @@ def get_token_lifetime():
 class LoginView(TokenObtainPairView):
 
     def get(self, request):
-        token = make_token(request.query_params.get('client_id'))
+        token = make_token(request.query_params.get('client_id'), force_new=True)
         data = {'token': token}
         data.update(get_token_lifetime())
         return ApiResponse(data=data)
@@ -56,8 +55,12 @@ class UserInfoView(APIView):
         data = UserInfoSerializer(request.user).data
         return ApiResponse(data=data)
 
-    def post(self, request):
-        auth.logout(request)
+    def put(self, request):
+        serializer = UserInfoUpdateSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return ApiResponse()
+        return ApiResponse(code=1001, msg='修改失败')
 
 
 class LogoutView(APIView):

@@ -20,8 +20,24 @@
 
       <el-sub-menu index="6">
         <template #title>{{ getTitleName() }}</template>
-        <el-menu-item index="userinfo">个人中心</el-menu-item>
-        <el-menu-item @click="logout">注销登录</el-menu-item>
+        <el-menu-item index="userinfo">
+          <el-icon>
+            <UserFilled/>
+          </el-icon>
+          个人中心
+        </el-menu-item>
+        <el-menu-item index="password">
+          <el-icon>
+            <Unlock/>
+          </el-icon>
+          修改密码
+        </el-menu-item>
+        <el-menu-item @click="logout">
+          <el-icon>
+            <SwitchFilled/>
+          </el-icon>
+          注销登录
+        </el-menu-item>
       </el-sub-menu>
       <div class="flex-grow"/>
 

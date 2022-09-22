@@ -24,6 +24,14 @@ export function getUserInfo() {
     })
 }
 
+export function updateUserInfo(data) {
+    return request({
+        url: '/userinfo',
+        method: 'put',
+        data
+    })
+}
+
 export function logout(data) {
     return request({
         url: '/logout',

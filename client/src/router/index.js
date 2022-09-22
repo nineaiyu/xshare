@@ -15,7 +15,7 @@ const routes = [
     {
         path: '/',
         name: 'index',
-        redirect: {name: 'hello'}
+        redirect: {name: 'lobby'}
     }, {
         path: '/HelloWorld',
         name: 'hello',
@@ -45,9 +45,20 @@ const routes = [
         name: 'files',
         component: () => import('@/components/FileManager')
     }, {
-        path: '/userinfo',
-        name: 'userinfo',
-        component: () => import('@/components/UserInfo')
+        path: '/user',
+        name: 'user',
+        component: () => import('@/components/UserBase'),
+        children: [
+            {
+                path: 'info',
+                name: 'userinfo',
+                component: import('@/components/UserInfo'),
+            }, {
+                path: 'pwd',
+                name: 'password',
+                component: import('@/components/UserPwd'),
+            },
+        ]
     }, {
         path: '/:short',
         name: 'short',
@@ -71,7 +82,7 @@ router.beforeEach(async (to, from, next) => {
         return
     }
 
-    const menuList = ['lobby', 'upload', 'files', 'drive', 'share', 'userinfo']
+    const menuList = ['lobby', 'upload', 'files', 'drive', 'share', 'userinfo', 'password']
     const menu = menuStore()
     if (menuList.indexOf(to.name) !== -1) {
         menu.activeIndex = to.name

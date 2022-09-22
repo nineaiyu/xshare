@@ -29,6 +29,32 @@ class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
         fields = ['username', 'first_name', 'email', 'last_login']
+        read_only_fields = list(
+            set([x.name for x in models.User._meta.fields]) - {"first_name"})
+
+
+class UserInfoUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = ['first_name', 'old_password', 'new_password']
+        extra_kwargs = {
+            "old_password": {"write_only": True},
+            "new_password": {"write_only": True},
+        }
+
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    def update(self, instance, validated_data):
+        old_password = validated_data.get("old_password")
+        new_password = validated_data.get("new_password")
+        if old_password and new_password:
+            if not instance.check_password(validated_data.get("old_password")):
+                raise Exception('旧密码校验失败')
+            instance.set_password(validated_data.get("new_password"))
+            instance.save()
+            return instance
+        return super(UserInfoUpdateSerializer, self).update(instance, validated_data)
 
 
 class FileInfoSerializer(serializers.ModelSerializer):
