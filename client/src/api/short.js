@@ -8,3 +8,11 @@ export function getFileShare(params) {
         params: params
     })
 }
+
+export function getFileUrl(data) {
+    return request({
+        url: '/short',
+        method: 'post',
+        data
+    })
+}

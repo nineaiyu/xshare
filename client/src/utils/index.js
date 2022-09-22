@@ -78,3 +78,33 @@ export function getRandomStr(strLength = 32) {
     return randomCode
 }
 
+function randomColor() {
+    let random = '#'
+    for (let i = 0; i < 6; i++) {
+        random += parseInt(Math.random() * 15).toString(16)  //随机数取整，并转换成16进制
+    }
+    return random    //返回随机数
+}
+
+export function createBase64(str) {
+    if (str.length > 1) {
+        str = str[getRandomNum(0, str.length - 1)]
+    }
+    const can = document.createElement("canvas");
+    const width = 160;
+    const height = 160;
+    Object.assign(can, {width, height});
+
+    const cans = can.getContext("2d");
+    if (cans) {
+        cans.font = "130px Arial";
+        // cans.fillStyle = "rgb(8,115,199)";
+        cans.shadowBlur = 20;
+        cans.shadowColor = "black";
+        cans.fillStyle = randomColor();
+        cans.textAlign = "center";
+        cans.textBaseline = "middle";
+        cans.fillText(str, width / 2, height / 2 + 10);
+    }
+    return can.toDataURL("image/png");
+}

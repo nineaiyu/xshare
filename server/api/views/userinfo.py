@@ -4,10 +4,12 @@
 # filename : userinfo
 # author : ly_13
 # date : 2022/9/13
-from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from django.contrib import auth
 from django.conf import settings
+from django.contrib import auth
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 from api.utils.serializer import UserInfoSerializer
 from common.core.response import ApiResponse
 from common.utils.token import make_token, verify_token
@@ -56,3 +58,11 @@ class UserInfoView(APIView):
 
     def post(self, request):
         auth.logout(request)
+
+
+class LogoutView(APIView):
+
+    def post(self, request):
+        token = RefreshToken(request.data.get('refresh'))
+        token.blacklist()
+        return ApiResponse()

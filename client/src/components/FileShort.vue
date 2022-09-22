@@ -25,7 +25,7 @@
         </el-col>
         <el-col :span="8" style="display: flex;flex-direction: column;justify-content: space-around">
           <div>
-            <el-avatar :size="80" :src="userInfo.head_img"/>
+            <el-avatar :size="80" :src="createBase64(userInfo.first_name)"/>
           </div>
           <div><i style="color: teal">{{ userInfo.first_name }}</i></div>
           <div style="margin: 0 10px">
@@ -44,7 +44,9 @@
                 </el-col>
               </el-row>
             </div>
-            <el-button v-else color="#626aef" icon="Download" plain @click="downloadShare">全部下载</el-button>
+            <el-button v-else color="#626aef" icon="Download" plain @click="downloadFile(shareInfo.file_info_list)">
+              全部下载
+            </el-button>
           </div>
         </el-col>
         <el-col :span="8">
@@ -75,7 +77,7 @@
           <el-table-column align="center" label="备注" prop="description"/>
           <el-table-column align="center" label="操作" width="110">
             <template #default="scope">
-              <el-button size="small" @click="downloadFile(scope.row.id)">下载文件</el-button>
+              <el-button size="small" @click="downloadFile([scope.row])">下载文件</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -85,9 +87,8 @@
 </template>
 
 <script>
-import {getFileShare} from "@/api/download";
-import {diskSize, downloadFile, formatTime} from "@/utils";
-import {downloadManyFile, getDownloadUrl} from "@/api/file";
+import {getFileShare, getFileUrl} from "@/api/short";
+import {createBase64, diskSize, downloadFile, formatTime} from "@/utils";
 
 export default {
   name: "FileDownload",
@@ -105,6 +106,14 @@ export default {
     }
   },
   methods: {
+    createBase64,
+    makeDownloadAuth(rows) {
+      let auth = []
+      rows.forEach(res => {
+        auth.push({file_id: res.file_id, token: res.token})
+      })
+      return auth
+    },
     getFileIdList() {
       let file_id_list = []
       this.shareInfo.file_info_list.forEach(res => {
@@ -112,16 +121,11 @@ export default {
       })
       return file_id_list
     },
-    downloadShare() {
-      downloadManyFile(this.getFileIdList()).then(res => {
+    downloadFile(rows) {
+      getFileUrl({auth_infos: this.makeDownloadAuth(rows)}).then(res => {
         res.data.forEach(url => {
           downloadFile(url.download_url)
         })
-      })
-    },
-    downloadFile(id) {
-      getDownloadUrl(id).then(res => {
-        downloadFile(res.data.download_url)
       })
     },
     diskSize,

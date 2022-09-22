@@ -45,9 +45,13 @@ const routes = [
         name: 'files',
         component: () => import('@/components/FileManager')
     }, {
+        path: '/userinfo',
+        name: 'userinfo',
+        component: () => import('@/components/UserInfo')
+    }, {
         path: '/:short',
         name: 'short',
-        component: () => import('@/components/FileDownload')
+        component: () => import('@/components/FileShort')
     }
 
 ]
@@ -60,7 +64,14 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     // start progress bar
     NProgress.start()
-    const menuList = ['lobby', 'upload', 'files', 'drive', 'share']
+
+    if (to.name === 'short') {
+        next()
+        NProgress.done()
+        return
+    }
+
+    const menuList = ['lobby', 'upload', 'files', 'drive', 'share', 'userinfo']
     const menu = menuStore()
     if (menuList.indexOf(to.name) !== -1) {
         menu.activeIndex = to.name

@@ -81,7 +81,7 @@ service.interceptors.response.use(
                 token.count += 1
                 refreshToken({refresh: RefreshToken}).then(res => {
                     setToken(res.data)
-                    if (token.count > 2) {
+                    if (token.count > 1) {
                         removeToken()
                         token.count = 0
                     } else {

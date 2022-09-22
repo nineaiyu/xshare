@@ -1,6 +1,7 @@
 <template>
   <div :style="{minHeight:minHeight+'px'}">
-    <ShareHeader></ShareHeader>
+    <ShareHeader v-if="showHeader"></ShareHeader>
+    <div v-else style="margin-top: 60px"></div>
     <div class="v_body">
       <router-view></router-view>
     </div>
@@ -11,6 +12,7 @@
 <script>
 import ShareHeader from "@/components/ShareHeader";
 import ShareFooter from "@/components/ShareFooter";
+import {getAccessToken} from "@/utils/auth";
 
 export default {
   name: 'App',
@@ -20,13 +22,27 @@ export default {
   },
   data() {
     return {
-      minHeight: 0
+      minHeight: 0,
+      showHeader: true
     }
   }, mounted() {
     this.minHeight = document.documentElement.clientHeight - 30
     let that = this
     window.onresize = function () {
       that.minHeight = document.documentElement.clientHeight - 30
+    }
+    this.setHeader(this.$route)
+  }, watch: {
+    $route: {
+      handler: function (route) {
+        this.setHeader(route)
+      }
+    }
+  }, methods: {
+    setHeader(route) {
+      if (route.name === 'short' && !getAccessToken()) {
+        this.showHeader = false
+      }
     }
   }
 }

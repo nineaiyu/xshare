@@ -9,6 +9,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 // element ui icons
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import Particles from "particles.vue3";
 
 const app = createApp(App)
 
@@ -22,6 +23,8 @@ app.use(ElementPlus)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }
+
+app.use(Particles)
 
 // 挂载
 app.mount('#app')

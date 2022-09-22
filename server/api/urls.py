@@ -22,7 +22,7 @@ from api.views.files import FileInfoView, ManyView
 from api.views.share import ShareCodeView
 from api.views.short import ShortView
 from api.views.upload import AliyunDriveUploadView
-from api.views.userinfo import LoginView, UserInfoView, RefreshTokenView
+from api.views.userinfo import LoginView, UserInfoView, RefreshTokenView, LogoutView
 
 router = SimpleRouter(False)
 router.register('drive', AliyunDriveView)
@@ -32,6 +32,7 @@ router.register('share', ShareCodeView)
 urlpatterns = [
     # path('token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login', LoginView.as_view(), name='login'),
+    path('logout', LogoutView.as_view(), name='logout'),
     path('userinfo', UserInfoView.as_view(), name='userinfo'),
     path('qrdrive', AliyunDriveQRView.as_view(), name='qrdrive'),
     path('upload', AliyunDriveUploadView.as_view(), name='upload'),

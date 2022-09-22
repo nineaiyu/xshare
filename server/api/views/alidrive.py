@@ -15,7 +15,7 @@ from api.models import AliyunDrive, FileInfo
 from api.utils.model import get_aliyun_drive
 from api.utils.serializer import AliyunDriveSerializer
 from common.base.utils import AesBaseCrypt
-from common.cache.storage import DriveQrCache, DownloadUrlCache
+from common.cache.storage import DriveQrCache, DownloadUrlCache, AliDriveCache
 from common.core.filter import OwnerUserFilter
 from common.core.modelset import BaseModelSet
 from common.core.response import PageNumber, ApiResponse
@@ -57,6 +57,12 @@ class AliyunDriveView(BaseModelSet):
     def create(self, request, *args, **kwargs):
         return ApiResponse(code=1001, msg='添加失败')
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = super().update(request, *args, **kwargs).data
+        AliDriveCache(instance.user_id).del_storage_cache()
+        return ApiResponse(data=data)
+
 
 def expect_func(result, *args, **kwargs):
     if result and result.get('code', -1) in [0, 1, 2]:
@@ -85,6 +91,7 @@ class AliyunDriveQRView(APIView):
             if status and result.get('data', {}).get('code') == 0:
                 ali_drive_obj = AliyunDrive.objects.filter(owner_id=request.user,
                                                            user_id=ali_auth.token.user_id).first()
+                AliDriveCache(ali_drive_obj.user_id).del_storage_cache()
                 ali_obj = get_aliyun_drive(ali_drive_obj)
                 default_drive_obj = ali_obj.get_default_drive()
                 ali_drive_obj.total_size = default_drive_obj.total_size

@@ -10,7 +10,9 @@ import logging
 from django.db.models import Sum
 from django.utils import timezone
 from rest_framework import serializers
+
 from api import models
+from common.utils.token import make_token
 
 logger = logging.getLogger(__file__)
 
@@ -67,6 +69,17 @@ class ShareCodeSerializer(serializers.ModelSerializer):
         return obj.file_id.count()
 
 
+class FileShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.FileInfo
+        exclude = ["owner_id", "aliyun_drive_id", "id", "content_type", "crc64_hash"]
+
+    token = serializers.SerializerMethodField()
+
+    def get_token(self, obj):
+        return make_token(key=obj.file_id, time_limit=300, force_new=True)
+
+
 class ShortSerializer(ShareCodeSerializer):
     class Meta:
         model = models.ShareCode
@@ -76,7 +89,7 @@ class ShortSerializer(ShareCodeSerializer):
     def get_file_info_list(self, obj):
         if obj.password and not obj.password == self.context.get('password'):
             return []
-        return FileInfoSerializer(obj.file_id.all(), many=True).data
+        return FileShortSerializer(obj.file_id.all(), many=True).data
 
     need_password = serializers.SerializerMethodField()
 
