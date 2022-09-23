@@ -9,7 +9,7 @@
           drag
           multiple
       >
-        <div v-if="!progress.progress">
+        <div v-if="!progress.progress||progress.progress===100">
           <el-icon class="el-icon--upload">
             <upload-filled/>
           </el-icon>
@@ -18,9 +18,9 @@
           </div>
         </div>
         <div v-else>
-          <el-progress :color="colors" :percentage="Number(progress.speed%100)" type="dashboard">
+          <el-progress :color="colors" :percentage="Number(progress.speeds%100)" type="dashboard">
             <template #default>
-              <span class="percentage-value">{{ diskSize(progress.speed) }}</span>
+              <span class="percentage-value">{{ diskSize(progress.speeds) }}</span>
               <span class="percentage-label">上传中</span>
             </template>
           </el-progress>
@@ -30,7 +30,7 @@
           <div class="el-upload__tip">
             请上传文件，仅支持上传文件，不支持文件夹
           </div>
-          <div v-if="progress.progress" style="margin-top: 10px">
+          <div v-if="progress.progress && progress.progress!==100" style="margin-top: 10px">
             <el-progress :indeterminate="true" :percentage="progress.progress"/>
             <div style="margin-top: 10px">
               {{ rawFile.name }}

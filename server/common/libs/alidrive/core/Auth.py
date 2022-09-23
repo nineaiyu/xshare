@@ -11,6 +11,7 @@ import requests
 from api.models import AliyunDrive
 from common.libs.alidrive.core.Config import *
 from common.libs.alidrive.types import Token, DataClass
+from common.cache.storage import AliDriveCache
 
 
 def get_token_from_db(drive_obj):
@@ -29,6 +30,7 @@ def save_token_to_db(drive_obj, token):
         defaults[f] = getattr(token, f)
         # setattr(drive_obj, f, getattr(token, f))
     AliyunDrive.objects.filter(owner_id=drive_obj.owner_id).update_or_create(defaults=defaults, user_id=token.user_id)
+    AliDriveCache(token.user_id).del_storage_cache()
 
 
 class Auth(object):

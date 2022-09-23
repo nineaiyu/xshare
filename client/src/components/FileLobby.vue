@@ -1,14 +1,28 @@
 <template>
+  <div>
+    <el-avatar :size="100" :src="url"/>
+  </div>
   Lobby
+
 </template>
 
 <script>
 
+import {createBase64} from "@/utils";
+
 export default {
   name: "FileLobby",
   components: {},
-  mounted() {
+  data() {
+
+    return {
+      url: ''
+    }
   },
+  mounted() {
+    this.url = createBase64('X',)
+  },
+  methods: {}
 }
 </script>
 

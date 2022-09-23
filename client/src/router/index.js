@@ -29,6 +29,10 @@ const routes = [
         name: 'upload',
         component: () => import('@/components/FileUpload')
     }, {
+        path: '/uploads',
+        name: 'uploads',
+        component: () => import('@/components/FileMultiUpload')
+    }, {
         path: '/lobby',
         name: 'lobby',
         component: () => import('@/components/FileLobby')
@@ -82,7 +86,7 @@ router.beforeEach(async (to, from, next) => {
         return
     }
 
-    const menuList = ['lobby', 'upload', 'files', 'drive', 'share', 'userinfo', 'password']
+    const menuList = ['lobby', 'upload', 'files', 'drive', 'share', 'userinfo', 'password', 'uploads']
     const menu = menuStore()
     if (menuList.indexOf(to.name) !== -1) {
         menu.activeIndex = to.name
