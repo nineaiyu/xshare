@@ -13,11 +13,19 @@ from common.libs.alidrive import Aligo
 from django.utils import timezone
 
 from api.models import AliyunDrive, FileInfo
+from common.base.magic import run_function_by_locker
 from common.cache.storage import DownloadUrlCache, AliDriveCache
 
 logger = logging.getLogger(__file__)
 
 
+def get_locker(*args, **kwargs):
+    return {
+        'locker_key': f'get_aliyun_drive_{args[0].user_id}'
+    }
+
+
+@run_function_by_locker(lock_func=get_locker)
 def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
     drive_cache = AliDriveCache(drive_obj.user_id)
     cache_data = drive_cache.get_storage_cache()

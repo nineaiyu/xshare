@@ -3,7 +3,7 @@
     <el-menu
         :default-active="store.activeIndex"
         :ellipsis="false"
-        class="el-menu-demo"
+        class="el-menu-demo ly-header"
         mode="horizontal"
         @select="handleSelect"
     >
@@ -13,8 +13,7 @@
 
       <el-menu-item index="lobby">文件大厅</el-menu-item>
       <el-menu-item index="share">分享记录</el-menu-item>
-      <el-menu-item index="upload">发送文件</el-menu-item>
-      <el-menu-item index="uploads">NEW发送文件</el-menu-item>
+      <el-menu-item index="uploads">发送文件</el-menu-item>
       <el-menu-item index="files">文件管理</el-menu-item>
       <el-menu-item index="drive">云盘管理</el-menu-item>
       <div class="flex-grow"/>
@@ -96,5 +95,13 @@ export default {
 .flex-grow {
   flex-grow: 1;
 }
+
+.ly-header{
+  background-image: linear-gradient(to right, #92fe9d 0%, #00c9ff 100%);
+}
+
+
+
+
 
 </style>

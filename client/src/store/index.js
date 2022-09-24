@@ -53,14 +53,6 @@ export const tokenStore = defineStore('token', {
     }),
 })
 
-export const uploadProgressStore = defineStore('progress', {
-    state: () => ({
-        progress: '',
-        speeds: '',
-        percent: []
-    }),
-})
-
 
 export const uploadStore = defineStore('upload', {
     state: () => ({

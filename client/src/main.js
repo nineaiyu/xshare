@@ -11,6 +11,9 @@ import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import Particles from "particles.vue3";
 
+// common css
+import '@/assets/css/common.css'
+
 const app = createApp(App)
 
 const pinia = createPinia()

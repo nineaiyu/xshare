@@ -7,7 +7,7 @@ import {tokenStore} from "@/store";
 // create an axios instance
 const service = axios.create({
     // baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-    baseURL: 'http://127.0.0.1:8000/api/v1', // url = base url + request url
+    baseURL: 'https://app.hehelucky.cn/api/v1', // url = base url + request url
     // withCredentials: true, // send cookies when cross-domain requests
     timeout: 60000 // request timeout
 })
@@ -82,7 +82,7 @@ service.interceptors.response.use(
     },
     error => {
         const token = tokenStore()
-        if (error.response.status === 401) {
+        if (error.response && error.response.status === 401) {
             const RefreshToken = getRefreshToken()
             if (RefreshToken) {
                 token.count += 1

@@ -12,6 +12,7 @@ from django.db.models import F
 from rest_framework.views import APIView
 
 from api.models import FileInfo, AliyunDrive
+from api.tasks import delay_sync_drive_size
 from api.utils.model import get_aliyun_drive
 from common.base.utils import AesBaseCrypt
 from common.core.response import ApiResponse
@@ -31,7 +32,7 @@ def check_sid(request, sid):
     return False
 
 
-def save_file_info(complete, request, drive_obj, ali_obj):
+def save_file_info(complete, request, drive_obj):
     fields = ['name', 'file_id', 'drive_id', 'created_at', 'size', 'content_type', 'content_hash',
               'crc64_hash']
 
@@ -43,11 +44,7 @@ def save_file_info(complete, request, drive_obj, ali_obj):
         aliyun_drive_id=drive_obj,
         **defaults
     )
-    default_drive_obj = ali_obj.get_default_drive()
-    drive_obj.total_size = default_drive_obj.total_size
-    drive_obj.used_size = default_drive_obj.used_size
-    drive_obj.active = True
-    drive_obj.save(update_fields=['total_size', 'used_size', 'active'])
+    delay_sync_drive_size(drive_obj)
 
 
 class AliyunDriveUploadView(APIView):
@@ -93,13 +90,13 @@ class AliyunDriveUploadView(APIView):
                     data['part_info_list'] = ali_obj.reget_upload_part_url(part_info)
                 else:
                     complete = ali_obj.get_file(part_info.file_id, part_info.drive_id)
-                    save_file_info(complete, request, drive_obj, ali_obj)
+                    save_file_info(complete, request, drive_obj)
                 return ApiResponse(data=data)
 
             elif action == 'upload_complete':
                 complete, check_status = ali_obj.upload_complete(file_info)
                 logger.debug(f'{file_info.get("file_name")} pre_hash check {complete}')
                 if complete and check_status:
-                    save_file_info(complete, request, drive_obj, ali_obj)
+                    save_file_info(complete, request, drive_obj)
                 return ApiResponse(data={'check_status': check_status})
         return ApiResponse(code=1001, msg='错误请求')

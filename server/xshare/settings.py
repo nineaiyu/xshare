@@ -14,6 +14,8 @@ from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from celery.schedules import crontab
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +27,7 @@ SECRET_KEY = "django-insecure-ftbwyk!&h-98rje2))(nb%7p#_(h&m9)s+a@5^r^#&varxvbhr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -41,7 +43,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'rest_framework',
-    'django_filters'
+    'django_filters',
+    'django_celery_results',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -80,10 +84,18 @@ WSGI_APPLICATION = "xshare.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'xshare',
+        'USER': 'xshare',
+        'PASSWORD': 'KGzKjZpWBp4R4RSa',
+        'HOST': '127.0.0.1',
+        'PORT': 3306,
+        'CONN_MAX_AGE': 600,
+        # 设置MySQL的驱动
+        # 'OPTIONS': {'init_command': 'SET storage_engine=INNODB'},
+        'OPTIONS': {'init_command': 'SET sql_mode="STRICT_TRANS_TABLES"', 'charset': 'utf8mb4'}
+    },
 }
 
 # Password validation
@@ -211,7 +223,7 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {"max_connections": 100},
-            "PASSWORD": '',
+            "PASSWORD": 'nineven',
             "DECODE_RESPONSES": True
         },
         "TIMEOUT": 60 * 15
@@ -305,4 +317,46 @@ CACHE_KEY_TEMPLATE = {
     'drive_qrcode_key': 'drive_qrcode',
     'download_url_key': 'download_url',
     'aliyun_drive_auth_key': 'aliyun_drive_auth',
+}
+
+# Celery Configuration Options
+# https://docs.celeryq.dev/en/stable/userguide/configuration.html?
+CELERY_TIMEZONE = "Australia/Tasmania"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'default'
+
+# broker redis
+DJANGO_DEFAULT_CACHES = CACHES['default']
+CELERY_BROKER_URL = 'redis://:%s@%s/2' % (
+    DJANGO_DEFAULT_CACHES["OPTIONS"]["PASSWORD"], DJANGO_DEFAULT_CACHES["LOCATION"].split("/")[2])
+
+CELERY_WORKER_CONCURRENCY = 10  # worker并发数
+CELERYD_FORCE_EXECV = True  # 非常重要,有些情况下可以防止死
+CELERY_RESULT_EXPIRES = 3600  # 任务结果过期时间
+
+CELERY_WORKER_DISABLE_RATE_LIMITS = True  # 任务发出后，经过一段时间还未收到acknowledge , 就将任务重新交给其他worker执行
+CELERY_WORKER_PREFETCH_MULTIPLIER = 60  # celery worker 每次去redis取任务的数量
+
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # 每个worker执行了多少任务就会死掉，我建议数量可以大一些，比如200
+
+CELERY_ENABLE_UTC = False
+DJANGO_CELERY_BEAT_TZ_AWARE = False
+
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+
+# celery消息的序列化方式，由于要把对象当做参数所以使用pickle
+CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+
+CELERY_BEAT_SCHEDULE = {
+    'sync_drive_size_job': {
+        'task': 'api.tasks.batch_sync_drive_size',
+        'schedule': crontab(hour=2, minute=2),
+        'args': ()
+    }
 }
