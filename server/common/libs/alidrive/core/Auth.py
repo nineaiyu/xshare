@@ -9,6 +9,7 @@ import coloredlogs
 import requests
 
 from api.models import AliyunDrive
+from common.base.magic import MagicCacheData
 from common.libs.alidrive.core.Config import *
 from common.libs.alidrive.types import Token, DataClass
 from common.cache.storage import AliDriveCache
@@ -92,10 +93,12 @@ class Auth(object):
         self.log.debug(f'session {sessionid}')
 
         #
-        self.token: Optional[Token] = None
+        self.token: Optional[Token] = Token
 
         if refresh_token:
             self.log.debug('登录方式 refresh_token')
+            print(self.drive_obj)
+            self.token.user_id = self.drive_obj.user_id
             self._refresh_token(refresh_token)
             return
 
@@ -152,6 +155,7 @@ class Auth(object):
             self.log.warning('未知错误 可能二维码已经过期')
             return {'code': 1, 'msg': '未知错误 可能二维码已经过期'}
 
+    @MagicCacheData.make_cache(cache_time=30, key=lambda *args: args[0].token.user_id)
     def _refresh_token(self, refresh_token=None):
         """刷新 token"""
         if refresh_token is None:

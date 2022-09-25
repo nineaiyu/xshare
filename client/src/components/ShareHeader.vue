@@ -96,12 +96,9 @@ export default {
   flex-grow: 1;
 }
 
-.ly-header{
+.ly-header {
   background-image: linear-gradient(to right, #92fe9d 0%, #00c9ff 100%);
 }
-
-
-
 
 
 </style>

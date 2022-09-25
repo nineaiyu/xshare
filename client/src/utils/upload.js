@@ -1,7 +1,7 @@
 import sha1 from 'js-sha1'
 import {checkContentHash, checkPreHash, getUploadSid, uploadComplete} from "@/api/upload";
 import {ElMessage} from "element-plus";
-import { uploadStore} from "@/store";
+import {uploadStore} from "@/store";
 import CryptoJs from 'crypto-js'
 import encHex from 'crypto-js/enc-hex'
 import {BlobToArrayBuffer, diskSize, upSpeed} from "@/utils/index";
@@ -169,20 +169,14 @@ async function ChunkedUpload(fileInfo, file, uploadExtra, partInfo, progress, re
                 progress.speed = '上传成功'
             } else {
                 ElMessage.error(fileInfo.file_name + ' 上传失败')
-                if (reject) {
-                    reject(fileInfo.file_name + ' 上传失败')
-                }
+                reject()
             }
-        }).catch(e => {
-            if (reject) {
-                reject(e)
-            }
+        }).catch((e) => {
+            reject(e)
         })
     } else {
         ElMessage.error(fileInfo.file_name + ' 上传失败，请重新上传')
-        if (reject) {
-            reject(fileInfo.file_name + ' 上传失败，请重新上传')
-        }
+        reject()
     }
 
 }
@@ -217,7 +211,20 @@ function multiRun(upload, keyList, func) {
     for (let j = 0; j < keyList.length; j += maximum) {
         for (let i = 0; i < maximum; i++) {
             if (i + j < keyList.length) {
-                promise[(j + i) % maximum] = promise[(j + i) % maximum].then(() => func(keyList[i + j]))
+                promise[(j + i) % maximum] = promise[(j + i) % maximum].then(() => func(keyList[i + j])).catch(({
+                                                                                                                    fileInfo,
+                                                                                                                    err
+                                                                                                                }) => {
+                    fileInfo.status = 0
+                    fileInfo.failTryCount -= 1
+                    if (fileInfo.failTryCount < 1) {
+                        ElMessage.error(`${fileInfo.file.name} 超过最大重试次数，停止上传`)
+                    } else {
+                        ElMessage.error(`${fileInfo.file.name} 上传失败，正在重试`)
+                        console.log(fileInfo.file.name, err)
+                        multiUpload()
+                    }
+                })
             }
         }
     }
@@ -235,21 +242,19 @@ function uploadAsync(fileInfo) {
         } else {
             return resolve()
         }
-        const fileName = file.name
-        const fileSize = file.size
         progress.progress = 10
         getUploadSid().then(async res => {
             // ElMessage.info(fileName + ' 文件读取中')
             progress.speed = '文件读取中'
             let hash = await PreHash(file, progress)
-            let fileInfo = {
+            let fileHashInfo = {
                 sid: res.data.sid,
-                file_name: fileName,
-                file_size: fileSize,
+                file_name: progress.file_name,
+                file_size: progress.file_size,
                 pre_hash: hash
             }
             progress.progress = 20
-            checkPreHash(fileInfo).then(async pRes => {
+            checkPreHash(fileHashInfo).then(async pRes => {
                 if (pRes.data.check_status === true) {
                     // 秒传逻辑
                     progress.progress = 30
@@ -257,47 +262,56 @@ function uploadAsync(fileInfo) {
                     progress.speed = '文件校验中'
                     // ElMessage.info(fileInfo.file_name + ' 秒传检测中')
                     let hash = await ContentHash(file, md5Code, progress)
-                    fileInfo.proof_code = hash.proofCode
-                    fileInfo.content_hash = hash.conHash
-                    checkContentHash(fileInfo).then(async cRes => {
+                    fileHashInfo.proof_code = hash.proofCode
+                    fileHashInfo.content_hash = hash.conHash
+                    checkContentHash(fileHashInfo).then(async cRes => {
                         if (cRes.data.check_status === true) {
                             progress.progress = 100
                             progress.upload_size = progress.file_size
                             progress.speed = '秒传成功'
                             // ElMessage.success(fileName + ' 上传成功')
                             fileInfo.status = 2
+                            fileInfo.upload_time = new Date()
                             multiUpload()
                             resolve()
                         } else {
-                            return await ChunkedUpload(fileInfo, file, cRes.data.upload_extra, cRes.data.part_info_list, progress, () => {
+                            return await ChunkedUpload(fileHashInfo, file, cRes.data.upload_extra, cRes.data.part_info_list, progress, () => {
                                 fileInfo.status = 2
+                                fileInfo.upload_time = new Date()
                                 multiUpload()
                                 resolve()
                             }, (err) => {
-                                console.log(err)
-                                addUploadFile(file)
-                                reject(err)
+                                // console.log(err)
+                                // addUploadFile(file)
+                                reject({fileInfo, err})
                             })
                         }
+                    }).catch((err) => {
+                        // console.log(err)
+                        // addUploadFile(file)
+                        reject({fileInfo, err})
                     })
                 } else {
-                    return await ChunkedUpload(fileInfo, file, pRes.data.upload_extra, pRes.data.part_info_list, progress, () => {
+                    return await ChunkedUpload(fileHashInfo, file, pRes.data.upload_extra, pRes.data.part_info_list, progress, () => {
                         fileInfo.status = 2
+                        fileInfo.upload_time = new Date()
                         multiUpload()
                         resolve()
                     }, (err) => {
-                        console.log(err)
-                        addUploadFile(file)
-                        reject(err)
+                        // console.log(err)
+                        // addUploadFile(file)
+                        reject({fileInfo, err})
                     })
                 }
-            }).catch((e) => {
-                addUploadFile(file)
-                reject(e)
+            }).catch((err) => {
+                // console.log(err)
+                // addUploadFile(file)
+                reject({fileInfo, err})
             })
-        }).catch((e) => {
-            addUploadFile(file)
-            reject(e)
+        }).catch((err) => {
+            // console.log(err)
+            // addUploadFile(file)
+            reject({fileInfo, err})
         })
     })
 }
@@ -311,7 +325,7 @@ export function multiUpload() {
                 readFileList.push(res)
             }
         })
-        multiRun(upload, readFileList.slice(0, upload.processNumber),uploadAsync)
+        multiRun(upload, readFileList.slice(0, upload.processNumber), uploadAsync)
     }
 }
 
@@ -324,9 +338,12 @@ export function addUploadFile(raw) {
         percent: [],
         speed: '0 MB',
         file_size: raw.size,
-        upload_size: 0
+        upload_size: 0,
+        upload_time: new Date()
     }
-    upload.multiFileList.push({file: raw, progress: uploadProgress, status: 0})
+    // status上传状态 0 队列，1 上传中，2 上传成功
+    // failTryCount 失败上传次数, 没上传一次，自动减去已，当为0的时候，停止上传
+    upload.multiFileList.push({file: raw, progress: uploadProgress, status: 0, failTryCount: 3})
     multiUpload()
 }
 

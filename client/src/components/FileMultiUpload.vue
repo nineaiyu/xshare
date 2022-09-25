@@ -28,23 +28,23 @@
 
         <el-col :span="12" style="height: calc(100vh - 180px);">
 
-          <ul  class="infinite-list scroll">
-            <li v-for="info in sortFileStatus(upload.multiFileList)" :key="info.file" class="infinite-list-item">
+          <ul class="infinite-list scroll">
+            <li v-for="info in getUploadFile(upload.multiFileList)" :key="info.file" class="infinite-list-item">
               <el-progress
-                  :text-inside="true"
-                  :stroke-width="50"
+                  :color="colors"
                   :percentage="info.progress.progress"
-                  :color="colors">
+                  :stroke-width="50"
+                  :text-inside="true">
                 <div style="width: 400px;">
                   <el-row>
                     <el-col :span="17">
                       <p style="overflow: hidden;text-overflow: ellipsis">{{ info.progress.file_name }}</p>
-                      <p>{{ formatUpload(info.progress) }} - {{info.progress.progress}}</p>
+                      <p>{{ formatUpload(info.progress) }} - {{ info.progress.progress }}</p>
                     </el-col>
 
-                    <el-col :span="7" >
+                    <el-col :span="7">
                       <el-row>
-                        <el-col :span="20"><span style="line-height: 50px">{{info.progress.speed}}</span></el-col>
+                        <el-col :span="20"><span style="line-height: 50px">{{ info.progress.speed }}</span></el-col>
                         <el-col :span="4">
                           <div v-if="info.progress.progress===100" style="line-height: 70px">
                             <el-icon :size="30">
@@ -55,11 +55,8 @@
                       </el-row>
                     </el-col>
                   </el-row>
-
                 </div>
-
               </el-progress>
-
             </li>
           </ul>
         </el-col>
@@ -72,6 +69,7 @@
 import {uploadStore} from "@/store";
 import {diskSize} from "@/utils";
 import {addUploadFile} from "@/utils/upload";
+
 export default {
   name: "FileMultiUpload",
   data() {
@@ -96,23 +94,44 @@ export default {
     formatUpload(info) {
       return `${diskSize(info.upload_size)}/${diskSize(info.file_size)}`
     },
-    sortFileStatus(fileList){
-      return fileList.sort((a,b)=>{
-        return b.status - a.status
+    sortFileStatus(fileList) {
+      return fileList.sort((a, b) => {
+        return b.progress.upload_time - a.progress.upload_time
       })
+    }, getUploadingFile(fileList) {
+      return fileList.filter(res => {
+        return res.status === 1
+      })
+    }, getUnUploadFile(fileList) {
+      return fileList.filter(res => {
+        return res.status !== 1
+      })
+    }, getUploadFile(fileList) {
+      let newFileList = []
+      this.getUploadingFile(fileList).forEach(res => {
+        newFileList.push(res)
+      })
+      this.getUnUploadFile(this.sortFileStatus(fileList)).forEach(res => {
+        newFileList.push(res)
+      })
+      return newFileList
     }
-  },watch:{
-    'upload.multiFileList': {
+  }, watch: {
+    'uploa1d.multiFileList': {
       handler: function (upload) {
-        console.log(upload[0].progress.progress,111)
+        upload.forEach(res => {
+          if (res.status === 1) {
+            console.log(res.progress.progress, res.progress.file_name, res.progress.speed)
+          }
+        })
       },
-      deep:true
+      deep: true
     }
   }
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .upload {
   width: 300px;
   margin: 100px auto;
@@ -134,6 +153,7 @@ export default {
   margin: 0;
   list-style: none;
 }
+
 .infinite-list .infinite-list-item {
   align-items: center;
   justify-content: center;
@@ -142,22 +162,25 @@ export default {
   margin: 10px;
   color: var(--el-color-primary);
 }
+
 .infinite-list .infinite-list-item + .list-item {
   margin-top: 10px;
 }
 
-.scroll{
-  height:100%;
+.scroll {
+  height: 100%;
   /*这里需要首先固定高度*/
   overflow-y: scroll;
   /*我们一般习惯为纵向有滚动条，横向为固定*/
-  overflow-x:hidden;
+  overflow-x: hidden;
 }
+
 /* 修改滚动条样式 */
 .scroll::-webkit-scrollbar {
   width: 3px;
   /*设置滚动条的宽度*/
 }
+
 /* 滚动区域的样式 */
 .scroll::-webkit-scrollbar-thumb {
   border-radius: 10px;
@@ -167,6 +190,7 @@ export default {
   background: rgb(81, 193, 238, 0.2);
   /*设置滚动条的颜色*/
 }
+
 /* 滚动条的背景样式 */
 .scroll::-webkit-scrollbar-track {
   /* -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); */

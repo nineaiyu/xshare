@@ -1,11 +1,13 @@
-.flex{
+.flex {
     display: flex;
 }
-.item-center{
+
+.item-center {
     display: flex;
     align-items: center;
 }
-.justify-center{
+
+.justify-center {
     display: flex;
     justify-content: center;
 }
