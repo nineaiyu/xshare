@@ -29,10 +29,10 @@
         <el-col :span="12" style="height: calc(100vh - 180px);">
           <el-card shadow="hover">
             <template #header>
-              <div style="text-align: left" v-if="upload.multiFileList.length===0">
+              <div v-if="upload.multiFileList.length===0" style="text-align: left">
                 文件上传列表
               </div>
-              <div style="text-align: left" v-else>
+              <div v-else style="text-align: left">
                 <div v-if="getUploadingFile(upload.multiFileList).length > 0">文件上传中，还剩
                   {{ getUnUploadNumber(upload.multiFileList) }} 项，共 {{ upload.multiFileList.length }} 项
                 </div>
@@ -63,12 +63,12 @@
                               </el-icon>
                             </div>
                             <div v-else style="line-height: 70px">
-                              <el-tooltip content="取消上传" v-if="[0,1].indexOf(info.status)!==-1">
+                              <el-tooltip v-if="[0,1].indexOf(info.status)!==-1" content="取消上传">
                                 <el-icon :size="30" @click="cancelUpload(info)">
                                   <CircleClose/>
                                 </el-icon>
                               </el-tooltip>
-                              <el-tooltip content="重新上传" v-else-if="info.status === 3 ">
+                              <el-tooltip v-else-if="info.status === 3 " content="重新上传">
                                 <el-icon :size="30" @click="cancelUpload(info)">
                                   <Position/>
                                 </el-icon>

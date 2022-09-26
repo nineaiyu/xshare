@@ -111,17 +111,17 @@
       </template>
     </el-table-column>
     <el-table-column align="center" label="操作" width="90">
-      <template #default="scope" >
+      <template #default="scope">
         <div style="display: flex;justify-content: space-around;flex-direction: column;height: 100px">
-        <el-row>
-          <el-button size="small" @click="addDrive('更新')">更新授权</el-button>
-        </el-row>
-        <el-row>
-          <el-button size="small" @click="cleanDrive(scope.row)">清理空间</el-button>
-        </el-row>
-        <el-row>
-          <el-button size="small" type="danger" @click="delStorage(scope.row)">删除空间</el-button>
-        </el-row>
+          <el-row>
+            <el-button size="small" @click="addDrive('更新')">更新授权</el-button>
+          </el-row>
+          <el-row>
+            <el-button size="small" @click="cleanDrive(scope.row)">清理空间</el-button>
+          </el-row>
+          <el-row>
+            <el-button size="small" type="danger" @click="delStorage(scope.row)">删除空间</el-button>
+          </el-row>
         </div>
 
       </template>

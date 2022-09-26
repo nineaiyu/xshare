@@ -8,12 +8,12 @@
 import logging
 from datetime import datetime, timedelta
 
-from common.base.magic import MagicCacheData
-from common.cache.state import SyncDriveSizeState
-from xshare.celery import app
+from celery import shared_task
+
 from api.models import AliyunDrive
 from api.utils.model import get_aliyun_drive
-from celery import shared_task
+from common.base.magic import MagicCacheData
+from xshare.celery import app
 
 logger = logging.getLogger(__file__)
 
@@ -44,7 +44,6 @@ def sync_drive_size(batch_queryset):
 def delay_sync_drive_size(drive_obj):
     c_task = sync_drive_size.apply_async(args=([drive_obj],), eta=eta_second(60 * 10))
     logger.info(f'{drive_obj} delay exec {c_task}')
-
 
 
 @app.task
