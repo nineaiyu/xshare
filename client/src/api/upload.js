@@ -5,7 +5,6 @@ export function checkPreHash(data) {
         url: '/upload',
         method: 'post',
         data: {'action': 'pre_hash', 'file_info': data},
-        timeout: 3000
     })
 }
 
@@ -14,7 +13,6 @@ export function checkContentHash(data) {
         url: '/upload',
         method: 'post',
         data: {'action': 'content_hash', 'file_info': data},
-        timeout: 3000
     })
 }
 
@@ -23,7 +21,6 @@ export function uploadComplete(data) {
         url: '/upload',
         method: 'post',
         data: {'action': 'upload_complete', 'file_info': data},
-        timeout: 3000
     })
 }
 

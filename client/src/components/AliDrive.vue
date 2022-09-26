@@ -111,17 +111,17 @@
       </template>
     </el-table-column>
     <el-table-column align="center" label="操作" width="90">
-      <template #default="scope">
-        <div style="display: flex;flex-direction: column;justify-content: space-around;align-items:center;height: 60px">
-          <el-button size="small" @click="addDrive('更新')"
-          >更新授权
-          </el-button>
-          <el-button
-              size="small"
-              type="danger"
-              @click="delStorage(scope.row)"
-          >删除
-          </el-button>
+      <template #default="scope" >
+        <div style="display: flex;justify-content: space-around;flex-direction: column;height: 100px">
+        <el-row>
+          <el-button size="small" @click="addDrive('更新')">更新授权</el-button>
+        </el-row>
+        <el-row>
+          <el-button size="small" @click="cleanDrive(scope.row)">清理空间</el-button>
+        </el-row>
+        <el-row>
+          <el-button size="small" type="danger" @click="delStorage(scope.row)">删除空间</el-button>
+        </el-row>
         </div>
 
       </template>
@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import {checkQrDrive, delDrive, getDrive, getQrDrive, updateDrive} from "@/api/drive";
+import {checkQrDrive, delDrive, getDrive, getQrDrive, operateDrive, updateDrive} from "@/api/drive";
 import {diskSize, formatTime} from "@/utils";
 import vueQr from 'vue-qr/src/packages/vue-qr.vue'
 import {ElMessage, ElMessageBox} from "element-plus";
@@ -174,6 +174,15 @@ export default {
       }
     }
   }, methods: {
+    cleanDrive(row) {
+      this.isLoading = true
+      operateDrive({pk: row.id, action: 'clean'}).then(() => {
+        ElMessage.success('空间清理完成')
+        this.isLoading = false
+      }).catch(() => {
+        this.isLoading = false
+      })
+    },
     handleFilter() {
       this.listQuery.page = 1
       this.getTableData()
@@ -236,9 +245,13 @@ export default {
             type: 'warning',
           }
       ).then(() => {
+        this.isLoading = true
         delDrive(row.id).then(() => {
           ElMessage.success('删除成功')
           this.getTableData()
+          this.isLoading = false
+        }).catch(() => {
+          this.isLoading = false
         })
       }).catch(() => {
         ElMessage({

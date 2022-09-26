@@ -152,11 +152,9 @@ class MagicCacheData(object):
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                cache_key = f'magic_cache_data'
+                cache_key = f'magic_cache_data_{func.__name__}'
                 if key:
                     cache_key = f'{cache_key}_{key(*args, **kwargs)}'
-                else:
-                    cache_key = f'{cache_key}_{func.__name__}'
 
                 n_time = time.time()
                 res = cache.get(cache_key)

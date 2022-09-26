@@ -27,38 +27,62 @@
         </el-col>
 
         <el-col :span="12" style="height: calc(100vh - 180px);">
-
-          <ul class="infinite-list scroll">
-            <li v-for="info in getUploadFile(upload.multiFileList)" :key="info.file" class="infinite-list-item">
-              <el-progress
-                  :color="colors"
-                  :percentage="info.progress.progress"
-                  :stroke-width="50"
-                  :text-inside="true">
-                <div style="width: 400px;">
-                  <el-row>
-                    <el-col :span="17">
-                      <p style="overflow: hidden;text-overflow: ellipsis">{{ info.progress.file_name }}</p>
-                      <p>{{ formatUpload(info.progress) }} - {{ info.progress.progress }}</p>
-                    </el-col>
-
-                    <el-col :span="7">
-                      <el-row>
-                        <el-col :span="20"><span style="line-height: 50px">{{ info.progress.speed }}</span></el-col>
-                        <el-col :span="4">
-                          <div v-if="info.progress.progress===100" style="line-height: 70px">
-                            <el-icon :size="30">
-                              <CircleCheck/>
-                            </el-icon>
-                          </div>
-                        </el-col>
-                      </el-row>
-                    </el-col>
-                  </el-row>
+          <el-card shadow="hover">
+            <template #header>
+              <div style="text-align: left" v-if="upload.multiFileList.length===0">
+                文件上传列表
+              </div>
+              <div style="text-align: left" v-else>
+                <div v-if="getUploadingFile(upload.multiFileList).length > 0">文件上传中，还剩
+                  {{ getUnUploadNumber(upload.multiFileList) }} 项，共 {{ upload.multiFileList.length }} 项
                 </div>
-              </el-progress>
-            </li>
-          </ul>
+                <span v-else>上传完成，共 {{ upload.multiFileList.length }} 项</span>
+              </div>
+            </template>
+            <ul class="infinite-list scroll">
+              <li v-for="info in getUploadFile(upload.multiFileList)" :key="info.file" class="infinite-list-item">
+                <el-progress
+                    :color="colors"
+                    :percentage="info.progress.progress"
+                    :stroke-width="50"
+                    :text-inside="true">
+                  <div style="width: 400px;">
+                    <el-row>
+                      <el-col :span="17">
+                        <p style="overflow: hidden;text-overflow: ellipsis">{{ info.progress.file_name }}</p>
+                        <p>{{ formatUpload(info.progress) }} - {{ info.progress.progress }}</p>
+                      </el-col>
+
+                      <el-col :span="7">
+                        <el-row>
+                          <el-col :span="20"><span style="line-height: 50px">{{ info.progress.speed }}</span></el-col>
+                          <el-col :span="4">
+                            <div v-if="info.progress.progress===100" style="line-height: 70px">
+                              <el-icon :size="30">
+                                <CircleCheck/>
+                              </el-icon>
+                            </div>
+                            <div v-else style="line-height: 70px">
+                              <el-tooltip content="取消上传" v-if="[0,1].indexOf(info.status)!==-1">
+                                <el-icon :size="30" @click="cancelUpload(info)">
+                                  <CircleClose/>
+                                </el-icon>
+                              </el-tooltip>
+                              <el-tooltip content="重新上传" v-else-if="info.status === 3 ">
+                                <el-icon :size="30" @click="cancelUpload(info)">
+                                  <Position/>
+                                </el-icon>
+                              </el-tooltip>
+                            </div>
+                          </el-col>
+                        </el-row>
+                      </el-col>
+                    </el-row>
+                  </div>
+                </el-progress>
+              </li>
+            </ul>
+          </el-card>
         </el-col>
       </el-row>
     </el-main>
@@ -68,7 +92,8 @@
 <script>
 import {uploadStore} from "@/store";
 import {diskSize} from "@/utils";
-import {addUploadFile} from "@/utils/upload";
+import {addUploadFile, multiUpload} from "@/utils/upload";
+import {ElMessage} from "element-plus";
 
 export default {
   name: "FileMultiUpload",
@@ -87,6 +112,17 @@ export default {
       upload,
     }
   }, methods: {
+    cancelUpload(info) {
+      if (info.status === 3) {
+        info.status = 0
+        info.failTryCount = 3
+        multiUpload()
+      } else {
+        info.status = 3
+        info.progress.speed = '已手动取消'
+        ElMessage.warning(`已手动取消上传 ${info.progress.file_name}`)
+      }
+    },
     async beforeUpload(raw) {
       addUploadFile(raw)
       return false
@@ -106,6 +142,10 @@ export default {
       return fileList.filter(res => {
         return res.status !== 1
       })
+    }, getUnUploadNumber(fileList) {
+      return fileList.filter(res => {
+        return res.status !== 2
+      }).length
     }, getUploadFile(fileList) {
       let newFileList = []
       this.getUploadingFile(fileList).forEach(res => {
@@ -134,7 +174,7 @@ export default {
 <style lang="scss" scoped>
 .upload {
   width: 300px;
-  margin: 100px auto;
+  margin: 200px auto;
 }
 
 :deep(.el-progress-bar__inner) {

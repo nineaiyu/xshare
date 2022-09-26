@@ -93,7 +93,7 @@ class Auth(object):
         self.log.debug(f'session {sessionid}')
 
         #
-        self.token: Optional[Token] = Token
+        self.token: Optional[Token] = Token()
 
         if refresh_token:
             self.log.debug('登录方式 refresh_token')

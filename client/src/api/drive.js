@@ -23,13 +23,6 @@ export function checkQrDrive(data) {
     })
 }
 
-export function refreshToken(data) {
-    return request({
-        url: '/token/refresh',
-        method: 'post',
-        data
-    })
-}
 
 export function getDrive(params) {
     return request({
@@ -43,6 +36,13 @@ export function delDrive(id) {
     return request({
         url: '/drive/' + id,
         method: 'delete',
+    })
+}
+export function operateDrive(data) {
+    return request({
+        url: '/drive',
+        method: 'post',
+        data
     })
 }
 

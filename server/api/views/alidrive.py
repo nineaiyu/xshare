@@ -34,6 +34,15 @@ class AliyunDriveFilter(filters.FilterSet):
         fields = ['user_id', 'user_name']
 
 
+def clean_drive_file(instance):
+    ali_obj = get_aliyun_drive(instance)
+    file_id_list = [file.get('file_id') for file in
+                    FileInfo.objects.filter(aliyun_drive_id=instance).values('file_id').all()]
+    result_list = ali_obj.batch_move_to_trash(file_id_list)
+    DownloadUrlCache(instance.default_drive_id, '*').del_many()
+    logger.debug(f'{instance} move {file_id_list} to trash.result:{result_list}')
+
+
 class AliyunDriveView(BaseModelSet):
     queryset = AliyunDrive.objects.all()
     serializer_class = AliyunDriveSerializer
@@ -45,17 +54,18 @@ class AliyunDriveView(BaseModelSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        ali_obj = get_aliyun_drive(instance)
-        file_id_list = [file.get('file_id') for file in
-                        FileInfo.objects.filter(aliyun_drive_id=instance).values('file_id').all()]
-        result_list = ali_obj.batch_move_to_trash(file_id_list)
-        DownloadUrlCache(instance.default_drive_id, '*').del_many()
-        logger.debug(f'{instance} move {file_id_list} to trash.result:{result_list}')
+        clean_drive_file(instance)
         self.perform_destroy(instance)
         return ApiResponse()
 
     def create(self, request, *args, **kwargs):
-        return ApiResponse(code=1001, msg='添加失败')
+        self.kwargs = request.data
+        if self.kwargs.get('action') == 'clean':
+            instance = self.get_object()
+            clean_drive_file(instance)
+            FileInfo.objects.filter(aliyun_drive_id=instance).delete()
+            return ApiResponse()
+        return ApiResponse(code=1001, msg='操作失败')
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

@@ -15,6 +15,7 @@ from api.models import FileInfo, AliyunDrive
 from api.tasks import delay_sync_drive_size
 from api.utils.model import get_aliyun_drive
 from common.base.utils import AesBaseCrypt
+from common.cache.storage import UploadPartInfoCache
 from common.core.response import ApiResponse
 
 logger = logging.getLogger(__file__)
@@ -73,7 +74,7 @@ class AliyunDriveUploadView(APIView):
             ali_obj = get_aliyun_drive(drive_obj)
             if action == 'pre_hash':
                 part_info, check_status = ali_obj.pre_hash_check(file_info)
-                logger.error(f'{file_info.get("file_name")} pre_hash check {part_info}')
+                logger.debug(f'{file_info.get("file_name")} pre_hash check {part_info}')
                 data = {
                     'check_status': check_status,
                     'md5_token': ali_obj.get_md5_token(),
@@ -91,6 +92,7 @@ class AliyunDriveUploadView(APIView):
                 else:
                     complete = ali_obj.get_file(part_info.file_id, part_info.drive_id)
                     save_file_info(complete, request, drive_obj)
+                    UploadPartInfoCache(file_info.get('sid')).del_storage_cache()
                 return ApiResponse(data=data)
 
             elif action == 'upload_complete':
@@ -98,5 +100,6 @@ class AliyunDriveUploadView(APIView):
                 logger.debug(f'{file_info.get("file_name")} pre_hash check {complete}')
                 if complete and check_status:
                     save_file_info(complete, request, drive_obj)
+                    UploadPartInfoCache(file_info.get('sid')).del_storage_cache()
                 return ApiResponse(data={'check_status': check_status})
         return ApiResponse(code=1001, msg='错误请求')

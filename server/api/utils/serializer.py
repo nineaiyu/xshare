@@ -32,6 +32,11 @@ class UserInfoSerializer(serializers.ModelSerializer):
         read_only_fields = list(
             set([x.name for x in models.User._meta.fields]) - {"first_name"})
 
+    first_name = serializers.SerializerMethodField()
+
+    def get_first_name(self, obj):
+        return obj.first_name if obj.first_name else obj.username
+
 
 class UserInfoUpdateSerializer(serializers.ModelSerializer):
     class Meta:

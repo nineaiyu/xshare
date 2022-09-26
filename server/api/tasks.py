@@ -8,6 +8,7 @@
 import logging
 from datetime import datetime, timedelta
 
+from common.base.magic import MagicCacheData
 from common.cache.state import SyncDriveSizeState
 from xshare.celery import app
 from api.models import AliyunDrive
@@ -39,15 +40,11 @@ def sync_drive_size(batch_queryset):
             logger.warning(f'{drive_obj} update drive size failed:{e}')
 
 
+@MagicCacheData.make_cache(cache_time=60 * 10, key=lambda *args: args[0].user_id)
 def delay_sync_drive_size(drive_obj):
-    with SyncDriveSizeState(f'delay_sync_drive_size_{drive_obj.user_id}', timeout=60 * 10) as state:
-        if state:
-            c_task = sync_drive_size.apply_async(args=([drive_obj],), eta=eta_second(60 * 10))
-            result = c_task.get(propagate=False)
-            logger.info(f'{drive_obj} delay exec success {result}')
-        else:
-            logger.info(f'{drive_obj} delay exist and return')
-            return
+    c_task = sync_drive_size.apply_async(args=([drive_obj],), eta=eta_second(60 * 10))
+    logger.info(f'{drive_obj} delay exec {c_task}')
+
 
 
 @app.task
@@ -55,7 +52,7 @@ def batch_sync_drive_size(batch=100):
     """
     :param batch:
     :return:
-    主要用户阿里网盘token刷新，并获取磁盘次年小，每天凌晨2点执行
+    主要用户阿里网盘token刷新，并获取磁盘空间大小，每天凌晨2点执行
     """
     drive_queryset = AliyunDrive.objects.filter(active=True, enable=True).all()
     for index in range(int(len(drive_queryset) / batch) + 1):
