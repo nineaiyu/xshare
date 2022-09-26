@@ -2,52 +2,8 @@ import sha1 from 'js-sha1'
 import {checkContentHash, checkPreHash, getUploadSid, uploadComplete} from "@/api/upload";
 import {ElMessage} from "element-plus";
 import {uploadStore} from "@/store";
-import CryptoJs from 'crypto-js'
-import encHex from 'crypto-js/enc-hex'
 import {BlobToArrayBuffer, diskSize, upSpeed} from "@/utils/index";
 
-// eslint-disable-next-line no-unused-vars
-function hashFileInternal(file, alog = CryptoJs.algo.SHA1.create()) {
-    // 指定块的大小，这里设置为20MB,可以根据实际情况进行配置
-    const chunkSize = 100 * 1024 * 1024
-    let promise = Promise.resolve()
-    // 使用promise来串联hash计算的顺序。因为FileReader是在事件中处理文件内容的，必须要通过某种机制来保证update的顺序是文件正确的顺序
-    for (let index = 0; index < file.size; index += chunkSize) {
-        promise = promise.then(() => hashBlob(file.slice(index, index + chunkSize)))
-    }
-
-    /**
-     * 更新文件块的hash值
-     */
-    function hashBlob(blob) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader()
-            reader.onload = ({target}) => {
-                const wordArray = CryptoJs.lib.WordArray.create(target.result)
-                // 增量更新计算结果
-                alog.update(wordArray)
-                resolve()
-            }
-            reader.onerror = function (event) {
-                reject(event)
-            }
-            reader.readAsArrayBuffer(blob)
-        })
-    }
-
-    // 使用promise返回最终的计算结果
-    return promise.then(() => encHex.stringify(alog.finalize()).toUpperCase())
-}
-
-// eslint-disable-next-line no-unused-vars
-async function GetFileHashProofCode2(buffer, filesize, md5_int) {
-
-    // eslint-disable-next-line no-undef
-    const start = Number(BigInt(md5_int) % BigInt(filesize))
-    const end = Math.min(start + 8, filesize)
-    const p_buff = buffer.slice(start, end)
-    return ArrayBufferToBase64(await BlobToArrayBuffer(p_buff))
-}
 
 function ArrayBufferToBase64(buffer) {
     let binary = '';
@@ -58,23 +14,11 @@ function ArrayBufferToBase64(buffer) {
     return window.btoa(binary);
 }
 
-function GetFileHashProofCode(buffer, filesize, md5_int) {
-
-    // eslint-disable-next-line no-undef
-    const start = Number(BigInt(md5_int) % BigInt(filesize))
-    const end = Math.min(start + 8, filesize)
-    const p_buff = buffer.slice(start, end)
-    return ArrayBufferToBase64(p_buff)
-}
-
 
 function GetFilePreHash(buffer) {
     return sha1.hex(buffer.slice(0, 1024))
 }
 
-function GetFileContentHash(buffer) {
-    return sha1.hex(buffer).toUpperCase()
-}
 
 async function PreHash(file, progress) {
     const buffer = await BlobToArrayBuffer(file.slice(0, 1024))
@@ -82,27 +26,53 @@ async function PreHash(file, progress) {
     return GetFilePreHash(buffer)
 }
 
+async function GetFileHashProofCode(file, filesize, md5_int) {
+    // eslint-disable-next-line no-undef
+    const start = Number(BigInt(md5_int) % BigInt(filesize))
+    const end = Math.min(start + 8, filesize)
+    const p_buff = file.slice(start, end)
+    return ArrayBufferToBase64(await BlobToArrayBuffer(p_buff))
+}
+
+
 export async function ContentHash(file, md5_int, progress) {
 
     return new Promise((resolve, reject) => {
-        let reader = new FileReader();
+        const chunkSize = 50 * 1024 * 1024
+        let promise = Promise.resolve()
+        for (let index = 0; index < file.size; index += chunkSize) {
+            promise = promise.then(() => hashBlob(file.slice(index, index + chunkSize)))
+        }
+        let count = 0
+        const hash = sha1.create()
 
-        reader.onerror = function (event) {
-            reject(event)
+        function hashBlob(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = ({target}) => {
+                    hash.update(target.result)
+                    count += 1
+                    resolve()
+                }
+                reader.onerror = function (event) {
+                    reject(event)
+                }
+                reader.onprogress = function (event) {
+                    if (event) {
+                        progress.progress = Math.ceil((event.loaded + count * chunkSize) * 100 / progress.file_size)
+                    }
+                }
+                reader.readAsArrayBuffer(blob)
+            })
         }
-        reader.onload = async function (event) {
-            const buffer = event.target.result
-            // ElMessage.info("文件校验中，请耐心等待")
-            const conHash = GetFileContentHash(event.target.result)
-            const proofCode = GetFileHashProofCode(buffer, file.size, md5_int)
+
+        promise.then(async () => {
+            const conHash = hash.hex().toUpperCase()
+            const proofCode = await GetFileHashProofCode(file, progress.file_size, md5_int)
             resolve({conHash, proofCode})
-        }
-        reader.onprogress = function (event) {
-            if (event && event.loaded > 1024) {
-                progress.progress = Math.ceil(event.loaded * 100 / file.size)
-            }
-        }
-        reader.readAsArrayBuffer(file)
+        }).catch(() => {
+            reject()
+        })
     })
 }
 
@@ -334,7 +304,7 @@ export function addUploadFile(raw) {
     }
     // status上传状态 0 队列，1 上传中，2 上传成功 ， 3 取消上传
     // failTryCount 失败上传次数, 没上传一次，自动减去已，当为0的时候，停止上传
-    upload.multiFileList.push({file: raw, progress: uploadProgress, status: 0, failTryCount: 3, uid:raw.uid})
+    upload.multiFileList.push({file: raw, progress: uploadProgress, status: 0, failTryCount: 3, uid: raw.uid})
     multiUpload()
 }
 
