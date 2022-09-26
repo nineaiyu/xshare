@@ -17,10 +17,6 @@ const routes = [
         name: 'index',
         redirect: {name: 'lobby'}
     }, {
-        path: '/HelloWorld',
-        name: 'hello',
-        component: () => import('@/components/HelloWorld')
-    }, {
         path: '/login',
         name: 'login',
         component: () => import('@/components/UserLogin')

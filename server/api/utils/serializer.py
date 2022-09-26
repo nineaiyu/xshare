@@ -108,7 +108,7 @@ class FileShortSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
 
     def get_token(self, obj):
-        return make_token(key=obj.file_id, time_limit=300, force_new=True)
+        return make_token(key=obj.file_id, time_limit=600, force_new=True)
 
 
 class ShortSerializer(ShareCodeSerializer):
@@ -126,3 +126,15 @@ class ShortSerializer(ShareCodeSerializer):
 
     def get_need_password(self, obj):
         return bool(obj.password)
+
+
+class LobbyShareSerializer(ShareCodeSerializer):
+    class Meta:
+        model = models.ShareCode
+        fields = ['short', 'created_time', 'description', 'size', 'count']
+
+
+class LobbyFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.FileInfo
+        fields = ['name', 'created_at', 'size', 'downloads', 'description', 'file_id']

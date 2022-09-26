@@ -19,6 +19,7 @@ from rest_framework.routers import SimpleRouter
 from api.views.alidrive import AliyunDriveView, AliyunDriveQRView
 from api.views.download import DownloadView
 from api.views.files import FileInfoView, ManyView
+from api.views.lobby import FileLobbyView
 from api.views.share import ShareCodeView
 from api.views.short import ShortView
 from api.views.upload import AliyunDriveUploadView
@@ -37,6 +38,7 @@ urlpatterns = [
     path('qrdrive', AliyunDriveQRView.as_view(), name='qrdrive'),
     path('upload', AliyunDriveUploadView.as_view(), name='upload'),
     path('short', ShortView.as_view(), name='short'),
+    path('lobby', FileLobbyView.as_view(), name='lobby'),
     re_path(r'^many/(?P<name>\w+)$', ManyView.as_view(), name='many'),
     path('refresh', RefreshTokenView.as_view(), name='refresh'),
     path('', include(router.urls))

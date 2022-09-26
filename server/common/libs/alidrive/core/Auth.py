@@ -155,7 +155,7 @@ class Auth(object):
             self.log.warning('未知错误 可能二维码已经过期')
             return {'code': 1, 'msg': '未知错误 可能二维码已经过期'}
 
-    @MagicCacheData.make_cache(cache_time=30, key=lambda *args: args[0].token.user_id)
+    @MagicCacheData.make_cache(timeout=30, key_func=lambda *args: args[0].token.user_id)
     def _refresh_token(self, refresh_token=None):
         """刷新 token"""
         if refresh_token is None:

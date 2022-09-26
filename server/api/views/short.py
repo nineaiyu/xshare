@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from api.models import ShareCode, FileInfo
 from api.utils.model import get_download_url, batch_get_download_url
 from api.utils.serializer import ShortSerializer
+from common.base.magic import cache_response
 from common.core.response import ApiResponse
 from common.utils.token import verify_token
 
@@ -30,7 +31,12 @@ class ShortView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    # @CacheResponse(timeout=60)
+    def get_cache_key(self, *args, **kwargs):
+        request = kwargs.get('request')
+        query_params = request.query_params
+        return f"{query_params.get('short')}_{query_params.get('password')}"
+
+    @cache_response(timeout=59 * 10, key_func='get_cache_key')
     def get(self, request):
         query_params = request.query_params
         short = query_params.get('short')
@@ -40,10 +46,10 @@ class ShortView(APIView):
             value = timezone.make_aware(datetime.datetime.now(), default_timezone)
             share_obj = ShareCode.objects.filter(short=short, expired_time__gt=value).first()
             if share_obj:
+                user_obj = share_obj.owner_id
+                first_name = user_obj.first_name if user_obj.first_name else user_obj.username
                 return ApiResponse(data={
-                    'user_info': {
-                        'first_name': share_obj.owner_id.first_name
-                    },
+                    'first_name': first_name,
                     'share_info': ShortSerializer(share_obj, context={'password': password}).data
                 })
         return ApiResponse(code=1001, msg='链接失效')

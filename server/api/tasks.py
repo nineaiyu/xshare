@@ -40,7 +40,7 @@ def sync_drive_size(batch_queryset):
             logger.warning(f'{drive_obj} update drive size failed:{e}')
 
 
-@MagicCacheData.make_cache(cache_time=60 * 10, key=lambda *args: args[0].user_id)
+@MagicCacheData.make_cache(timeout=60 * 10, key_func=lambda *args: args[0].user_id)
 def delay_sync_drive_size(drive_obj):
     c_task = sync_drive_size.apply_async(args=([drive_obj],), eta=eta_second(60 * 10))
     logger.info(f'{drive_obj} delay exec {c_task}')
