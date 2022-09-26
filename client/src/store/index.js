@@ -1,7 +1,6 @@
 import {defineStore} from 'pinia'
 import {getAccessToken, getRefreshToken, setToken} from '@/utils/auth'
 import {getUserInfo, login} from '@/api/user'
-import {multiUpload} from "@/utils/upload";
 
 export const userinfoStore = defineStore('userinfo', {
     state: () => ({
@@ -57,14 +56,7 @@ export const tokenStore = defineStore('token', {
 export const uploadStore = defineStore('upload', {
     state: () => ({
         multiFileList: [],
-        maximum: 3,
+        processNumber: 3,
         promise: []
     }),
-    actions: {
-        upload() {
-            if (this.multiFileList.length > 0) {
-                multiUpload()
-            }
-        }
-    }
 })

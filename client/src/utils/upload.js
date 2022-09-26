@@ -176,6 +176,7 @@ async function ChunkedUpload(fileInfo, fileHashInfo, uploadExtra, partInfo, reso
                 }
                 progress.progress = 100
                 progress.speed = '上传成功'
+                fileInfo.file = null
             } else {
                 ElMessage.error(fileHashInfo.file_name + ' 上传失败')
                 reject()
@@ -194,18 +195,22 @@ async function ChunkedUpload(fileInfo, fileHashInfo, uploadExtra, partInfo, reso
 
 
 function multiRun(upload, keyList, func) {
-    const maximum = upload.maximum
+    const processNumber = upload.processNumber
     const promise = upload.promise
-    for (let i = 0; i < maximum - promise.length; i++) {
+    for (let i = 0; i < processNumber - promise.length; i++) {
         promise.push(Promise.resolve())
     }
-    for (let j = 0; j < keyList.length; j += maximum) {
-        for (let i = 0; i < maximum; i++) {
+    let reduceNumber = promise.length - processNumber
+    if (reduceNumber > 0) {
+        upload.promise = promise.slice(0, reduceNumber)
+    }
+    for (let j = 0; j < keyList.length; j += processNumber) {
+        for (let i = 0; i < processNumber; i++) {
             if (i + j < keyList.length) {
-                promise[(j + i) % maximum] = promise[(j + i) % maximum].then(() => func(keyList[i + j])).catch(({
-                                                                                                                    fileInfo,
-                                                                                                                    err
-                                                                                                                }) => {
+                promise[(j + i) % processNumber] = promise[(j + i) % processNumber].then(() => func(keyList[i + j])).catch(({
+                                                                                                                                fileInfo,
+                                                                                                                                err
+                                                                                                                            }) => {
                     if (fileInfo.status === 3) {
                         console.log(fileInfo.file.name, '取消上传')
                     } else {
@@ -216,7 +221,7 @@ function multiRun(upload, keyList, func) {
                         } else {
                             ElMessage.error(`${fileInfo.file.name} 上传失败，正在重试`)
                             console.log(fileInfo.file.name, err)
-                            // multiUpload()
+                            multiUpload()
                         }
                     }
                 })
@@ -267,6 +272,7 @@ function uploadAsync(fileInfo) {
                             // ElMessage.success(fileName + ' 上传成功')
                             fileInfo.status = 2
                             fileInfo.upload_time = new Date()
+                            fileInfo.file = null
                             multiUpload()
                             resolve()
                         } else {
@@ -303,13 +309,13 @@ function uploadAsync(fileInfo) {
 
 export function multiUpload() {
     const upload = uploadStore()
-    if (upload.multiFileList && upload.multiFileList.length > 0) {
-        const readFileList = []
-        upload.multiFileList.forEach(res => {
-            if (res.status === 0) {
-                readFileList.push(res)
-            }
-        })
+    const readFileList = []
+    upload.multiFileList.forEach(res => {
+        if (res.status === 0) {
+            readFileList.push(res)
+        }
+    })
+    if (readFileList.length > 0) {
         multiRun(upload, readFileList.slice(0, upload.processNumber), uploadAsync)
     }
 }
@@ -328,7 +334,7 @@ export function addUploadFile(raw) {
     }
     // status上传状态 0 队列，1 上传中，2 上传成功 ， 3 取消上传
     // failTryCount 失败上传次数, 没上传一次，自动减去已，当为0的时候，停止上传
-    upload.multiFileList.push({file: raw, progress: uploadProgress, status: 0, failTryCount: 3})
+    upload.multiFileList.push({file: raw, progress: uploadProgress, status: 0, failTryCount: 3, uid:raw.uid})
     multiUpload()
 }
 

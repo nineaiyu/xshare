@@ -29,18 +29,28 @@
         <el-col :span="12" style="height: calc(100vh - 180px);">
           <el-card shadow="hover">
             <template #header>
-              <div v-if="upload.multiFileList.length===0" style="text-align: left">
-                文件上传列表
-              </div>
-              <div v-else style="text-align: left">
-                <div v-if="getUploadingFile(upload.multiFileList).length > 0">文件上传中，还剩
-                  {{ getUnUploadNumber(upload.multiFileList) }} 项，共 {{ upload.multiFileList.length }} 项
-                </div>
-                <span v-else>上传完成，共 {{ upload.multiFileList.length }} 项</span>
-              </div>
+              <el-row>
+                <el-col :span="18">
+                  <div v-if="upload.multiFileList.length===0" style="text-align: left">
+                    文件上传列表
+                  </div>
+                  <div v-else style="text-align: left">
+                    <div v-if="getUploadingFile(upload.multiFileList).length > 0">文件上传中，还剩
+                      {{ getUnUploadNumber(upload.multiFileList) }} 项，共 {{ upload.multiFileList.length }} 项
+                    </div>
+                    <span v-else>上传完成，共 {{ upload.multiFileList.length }} 项</span>
+                  </div>
+                </el-col>
+                <el-col :span="5">
+                  <el-tooltip content="同时上传任务数">
+                    <el-input-number v-model="upload.processNumber" :max="10" :min="1" @change="handleChange"/>
+                  </el-tooltip>
+                </el-col>
+              </el-row>
+
             </template>
             <ul class="infinite-list scroll">
-              <li v-for="info in getUploadFile(upload.multiFileList)" :key="info.file" class="infinite-list-item">
+              <li v-for="info in getUploadFile(upload.multiFileList)" :key="info.uid" class="infinite-list-item">
                 <el-progress
                     :color="colors"
                     :percentage="info.progress.progress"
@@ -112,6 +122,10 @@ export default {
       upload,
     }
   }, methods: {
+    handleChange(num) {
+      this.upload.processNumber = num
+      multiUpload()
+    },
     cancelUpload(info) {
       if (info.status === 3) {
         info.status = 0
@@ -123,7 +137,7 @@ export default {
         ElMessage.warning(`已手动取消上传 ${info.progress.file_name}`)
       }
     },
-    async beforeUpload(raw) {
+    beforeUpload(raw) {
       addUploadFile(raw)
       return false
     },
