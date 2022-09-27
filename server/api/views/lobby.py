@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 
 from api.models import ShareCode, FileInfo
 from api.utils.serializer import LobbyShareSerializer, LobbyFileSerializer
+from common.base.magic import cache_response
 from common.core.response import ApiResponse
 
 logger = logging.getLogger(__file__)
@@ -22,9 +23,8 @@ class FileLobbyView(APIView):
     permission_classes = []
     authentication_classes = []
 
-    # @cache_response(timeout=600)
+    @cache_response(timeout=600)
     def get(self, request):
-        query_params = request.query_params
         default_timezone = timezone.get_default_timezone()
         value = timezone.make_aware(datetime.datetime.now(), default_timezone)
         share_queryset = ShareCode.objects.filter(expired_time__gt=value).filter(
@@ -35,5 +35,5 @@ class FileLobbyView(APIView):
 
         return ApiResponse(data={
             'share_data': LobbyShareSerializer(share_queryset, many=True).data,
-            'file_data': LobbyFileSerializer(file_queryset, many=True).data
+            'file_data': LobbyFileSerializer(file_queryset, many=True, context={'time_limit': 600}).data
         })

@@ -213,7 +213,7 @@ class MagicCacheResponse(object):
                                request,
                                args,
                                kwargs):
-        key_func = self.calculate_key(
+        func_key = self.calculate_key(
             view_instance=view_instance,
             view_method=view_method,
             request=request,
@@ -222,8 +222,8 @@ class MagicCacheResponse(object):
         )
         func_name = f'{view_instance.__class__.__name__}_{view_method.__name__}'
         cache_key = f'magic_cache_response_{func_name}'
-        if key_func:
-            cache_key = f'{cache_key}_{key_func}'
+        if func_key:
+            cache_key = f'{cache_key}_{func_key}'
 
         timeout = self.calculate_timeout(view_instance=view_instance)
         n_time = time.time()
@@ -270,13 +270,14 @@ class MagicCacheResponse(object):
             key_func = getattr(view_instance, self.key_func)
         else:
             key_func = self.key_func
-        return key_func(
-            view_instance=view_instance,
-            view_method=view_method,
-            request=request,
-            args=args,
-            kwargs=kwargs,
-        )
+        if key_func:
+            return key_func(
+                view_instance=view_instance,
+                view_method=view_method,
+                request=request,
+                args=args,
+                kwargs=kwargs,
+            )
 
     def calculate_timeout(self, view_instance, **_):
         if isinstance(self.timeout, str):

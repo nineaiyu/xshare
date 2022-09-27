@@ -137,4 +137,12 @@ class LobbyShareSerializer(ShareCodeSerializer):
 class LobbyFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FileInfo
-        fields = ['name', 'created_at', 'size', 'downloads', 'description', 'file_id']
+        fields = ['name', 'created_at', 'size', 'downloads', 'description', 'file_id', 'token']
+
+    token = serializers.SerializerMethodField()
+
+    def get_token(self, obj):
+        context = self.context
+        time_limit = context.get('time_limit', 600)
+        prefix = context.get('prefix', 'lobby')
+        return make_token(key=obj.file_id, time_limit=time_limit, force_new=True, prefix=prefix)
