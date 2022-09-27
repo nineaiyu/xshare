@@ -8,6 +8,7 @@ import json
 import logging
 import time
 
+from django.conf import settings
 from django.db.models import F
 from rest_framework.views import APIView
 
@@ -17,6 +18,7 @@ from api.utils.model import get_aliyun_drive
 from common.base.utils import AesBaseCrypt
 from common.cache.storage import UploadPartInfoCache
 from common.core.response import ApiResponse
+from common.utils.token import generate_alphanumeric_token_of_length
 
 logger = logging.getLogger(__file__)
 
@@ -62,6 +64,8 @@ class AliyunDriveUploadView(APIView):
         if file_info and check_sid(request, file_info.get('sid', '')) and action in ['pre_hash', 'content_hash',
                                                                                      'upload_complete']:
 
+            file_name = file_info.get("file_name", generate_alphanumeric_token_of_length(32))
+            file_info['file_name'] = f'{settings.XSHARE}/{request.user.username}/{file_name}'
             drive_queryset = AliyunDrive.objects.filter(active=True, enable=True,
                                                         total_size__gte=F('used_size') + file_info.get('file_size', 0),
                                                         access_token__isnull=False)

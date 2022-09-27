@@ -360,3 +360,5 @@ CELERY_BEAT_SCHEDULE = {
         'args': ()
     }
 }
+
+XSHARE = '__DO_NOT_DELETE_XSHARE__'

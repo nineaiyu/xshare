@@ -159,13 +159,21 @@ class MagicCacheData(object):
 
                 n_time = time.time()
                 res = cache.get(cache_key)
+                if res:
+                    while res.get('status') != 'ok':
+                        time.sleep(0.5)
+                        logger.warning(f'locker is exist but data status is not ok. wait...')
+                        res = cache.get(cache_key)
+
                 if res and n_time - res.get('c_time', n_time) < timeout - invalid_time:
                     logger.info(f"exec {func} finished. cache_key:{cache_key}  cache data exist result:{res}")
                     return res['data']
                 else:
+                    res = {'c_time': n_time, 'data': '', 'status': 'ready'}
+                    cache.set(cache_key, res, timeout)
                     try:
-                        data = func(*args, **kwargs)
-                        res = {'c_time': n_time, 'data': data}
+                        res['data'] = func(*args, **kwargs)
+                        res['status'] = 'ok'
                         cache.set(cache_key, res, timeout)
                         logger.info(
                             f"exec {func} finished. time:{time.time() - n_time}  cache_key:{cache_key} result:{res}")

@@ -85,7 +85,7 @@ class ManyView(APIView):
                 ShareCode.objects.filter(owner_id=request.user, short__in=share_id_list).delete()
                 return ApiResponse()
             elif action in ['clean']:
-                deleted, _ = ShareCode.objects.filter(file_id__isnull=True).delete()
+                deleted, _ = ShareCode.objects.filter(owner_id=request.user, file_id__isnull=True).delete()
                 return ApiResponse(data={'count': deleted})
 
         return ApiResponse(code=1001, msg='操作失败')

@@ -6,12 +6,12 @@
 # date : 2022/9/13
 import logging
 
-from common.libs.alidrive.core.Auth import Auth
+from django.conf import settings
 from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
 
-from api.models import AliyunDrive, FileInfo
+from api.models import AliyunDrive, FileInfo, ShareCode
 from api.utils.model import get_aliyun_drive
 from api.utils.serializer import AliyunDriveSerializer
 from common.base.utils import AesBaseCrypt
@@ -19,6 +19,7 @@ from common.cache.storage import DriveQrCache, DownloadUrlCache, AliDriveCache
 from common.core.filter import OwnerUserFilter
 from common.core.modelset import BaseModelSet
 from common.core.response import PageNumber, ApiResponse
+from common.libs.alidrive.core.Auth import Auth
 from common.utils.pending import get_pending_result
 
 logger = logging.getLogger(__file__)
@@ -36,11 +37,11 @@ class AliyunDriveFilter(filters.FilterSet):
 
 def clean_drive_file(instance):
     ali_obj = get_aliyun_drive(instance)
-    file_id_list = [file.get('file_id') for file in
-                    FileInfo.objects.filter(aliyun_drive_id=instance).values('file_id').all()]
-    result_list = ali_obj.batch_move_to_trash(file_id_list)
-    DownloadUrlCache(instance.default_drive_id, '*').del_many()
-    logger.debug(f'{instance} move {file_id_list} to trash.result:{result_list}')
+    result = ali_obj.get_folder_by_path(settings.XSHARE)
+    if result:
+        result_list = ali_obj.move_file_to_trash(result.file_id)
+        DownloadUrlCache(instance.default_drive_id, '*').del_many()
+        logger.debug(f'{instance} move {result} to trash.result:{result_list}')
 
 
 class AliyunDriveView(BaseModelSet):
@@ -64,6 +65,7 @@ class AliyunDriveView(BaseModelSet):
             instance = self.get_object()
             clean_drive_file(instance)
             FileInfo.objects.filter(aliyun_drive_id=instance).delete()
+            ShareCode.objects.filter(owner_id=request.user, file_id__isnull=True).delete()
             return ApiResponse()
         return ApiResponse(code=1001, msg='操作失败')
 
