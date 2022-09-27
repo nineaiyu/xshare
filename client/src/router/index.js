@@ -71,18 +71,18 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     // start progress bar
     NProgress.start()
-
-    if (to.name === 'short') {
-        next()
-        NProgress.done()
-        return
-    }
-
     const menuList = ['lobby', 'files', 'drive', 'share', 'userinfo', 'password', 'uploads']
     const menu = menuStore()
     if (menuList.indexOf(to.name) !== -1) {
         menu.activeIndex = to.name
     }
+
+    if (['short', 'lobby'].indexOf(to.name) !== -1) {
+        next()
+        NProgress.done()
+        return
+    }
+
     const accessToken = getAccessToken()
     if (accessToken) {
         if (to.path === '/login') {

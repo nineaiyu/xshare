@@ -38,6 +38,8 @@ def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
 
 
 def get_download_url(file_obj: FileInfo, download=False) -> dict:
+    if not file_obj:
+        return {}
     download_cache = DownloadUrlCache(file_obj.drive_id, file_obj.file_id)
     cache_url = download_cache.get_storage_cache()
     if cache_url:

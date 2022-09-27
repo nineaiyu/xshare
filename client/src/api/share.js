@@ -42,3 +42,11 @@ export function delManyShare(share_id_list) {
 }
 
 
+export function cleanManyShare() {
+    return request({
+        url: '/many/share',
+        method: 'post',
+        data: {action: 'clean'}
+    })
+}
+

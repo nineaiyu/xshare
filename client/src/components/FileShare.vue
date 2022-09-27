@@ -17,6 +17,9 @@
     </el-button>
 
     <div style="float: right">
+      <el-button class="filter-item" icon="Delete" plain type="danger" @click="cleanManyShareFun">
+        清理无效分享&nbsp;&nbsp;&nbsp;
+      </el-button>
       <el-button class="filter-item" icon="Delete" plain type="danger" @click="delManyShareFun">
         删除选中分享&nbsp;&nbsp;&nbsp;
       </el-button>
@@ -204,7 +207,7 @@ import clip from '@/utils/clipboard'
 import {diskSize, downloadFile, formatTime, getLocationOrigin} from "@/utils";
 import {ElMessage, ElMessageBox} from "element-plus";
 import Pagination from "@/components/base/Pagination";
-import {delManyShare, delShare, getShare, updateShare} from "@/api/share";
+import {cleanManyShare, delManyShare, delShare, getShare, updateShare} from "@/api/share";
 import {downloadManyFile, getDownloadUrl} from "@/api/file";
 
 const sortOptions = [
@@ -253,6 +256,11 @@ export default {
         share_id_list.push(res.short)
       })
       return share_id_list
+    },
+    cleanManyShareFun() {
+      cleanManyShare().then(res => {
+        ElMessage.success(`清理成功，共清理${res.count}条无效分享`)
+      })
     },
     delManyShareFun() {
       ElMessageBox.confirm(

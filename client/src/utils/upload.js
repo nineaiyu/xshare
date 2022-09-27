@@ -205,8 +205,6 @@ function uploadAsync(fileInfo) {
     const progress = fileInfo.progress
     const file = fileInfo.file
     return new Promise((resolve, reject) => {
-        progress.file_name = file.name
-        progress.file_size = file.size
         if (fileInfo.status === 0) {
             fileInfo.status = 1
         } else {

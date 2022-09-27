@@ -11,7 +11,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
 
 from api.models import FileInfo, ShareCode
-from api.utils.model import batch_get_download_url, batch_delete_file, get_aliyun_drive
+from api.utils.model import get_aliyun_drive, batch_get_download_url, batch_delete_file
 from api.utils.serializer import FileInfoSerializer
 from common.cache.storage import DownloadUrlCache
 from common.core.filter import OwnerUserFilter
@@ -78,11 +78,14 @@ class ManyView(APIView):
                         batch_delete_file(file_obj_list)
                         FileInfo.objects.filter(owner_id=request.user, file_id__in=file_id_list).delete()
                         return ApiResponse()
-
         elif name == 'share':
             action = request.data.get('action', '')
             share_id_list = request.data.get('share_id_list', [])
-            if action in ['delete', ] and share_id_list:
+            if action in ['delete'] and share_id_list:
                 ShareCode.objects.filter(owner_id=request.user, short__in=share_id_list).delete()
                 return ApiResponse()
+            elif action in ['clean']:
+                deleted, _ = ShareCode.objects.filter(file_id__isnull=True).delete()
+                return ApiResponse(data={'count': deleted})
+
         return ApiResponse(code=1001, msg='操作失败')
