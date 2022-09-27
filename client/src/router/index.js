@@ -21,6 +21,10 @@ const routes = [
         name: 'login',
         component: () => import('@/components/UserLogin')
     }, {
+        path: '/register',
+        name: 'register',
+        component: () => import('@/components/UserRegister')
+    }, {
         path: '/uploads',
         name: 'uploads',
         component: () => import('@/components/FileMultiUpload')
@@ -71,13 +75,13 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     // start progress bar
     NProgress.start()
-    const menuList = ['lobby', 'files', 'drive', 'share', 'userinfo', 'password', 'uploads']
+    const menuList = ['lobby', 'files', 'drive', 'share', 'userinfo', 'password', 'uploads', 'register']
     const menu = menuStore()
     if (menuList.indexOf(to.name) !== -1) {
         menu.activeIndex = to.name
     }
 
-    if (['short', 'lobby'].indexOf(to.name) !== -1) {
+    if (['short', 'lobby', 'register'].indexOf(to.name) !== -1) {
         next()
         NProgress.done()
         return

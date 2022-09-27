@@ -259,7 +259,8 @@ export default {
     },
     cleanManyShareFun() {
       cleanManyShare().then(res => {
-        ElMessage.success(`清理成功，共清理${res.count}条无效分享`)
+        ElMessage.success(`清理成功，共清理${res.data.count}条无效分享`)
+        this.getTableData(true)
       })
     },
     delManyShareFun() {

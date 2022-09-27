@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import {getAccessToken, getRefreshToken, setToken} from '@/utils/auth'
-import {getUserInfo, login} from '@/api/user'
+import {getUserInfo, login, register} from '@/api/user'
 
 export const userinfoStore = defineStore('userinfo', {
     state: () => ({
@@ -18,9 +18,28 @@ export const userinfoStore = defineStore('userinfo', {
                 login({
                     username: username.trim(), password: password.trim(), token: loginData.token,
                     client_id: loginData.client_id
-                }).then(response => {
+                }).then(async response => {
                     const {data} = response
                     setToken(data)
+                    const userinfo = await this.getUserInfo()
+                    this.$patch(userinfo)
+                    resolve()
+                }).catch(error => {
+                    reject(error)
+                })
+            })
+        },
+        async register(userInfo, loginData) {
+            const {username, password} = userInfo
+            return new Promise((resolve, reject) => {
+                register({
+                    username: username.trim(), password: password.trim(), token: loginData.token,
+                    client_id: loginData.client_id
+                }).then(async response => {
+                    const {data} = response
+                    setToken(data)
+                    const userinfo = await this.getUserInfo()
+                    this.$patch(userinfo)
                     resolve()
                 }).catch(error => {
                     reject(error)

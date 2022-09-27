@@ -9,8 +9,9 @@ import logging
 from datetime import datetime, timedelta
 
 from celery import shared_task
+from django.utils import timezone
 
-from api.models import AliyunDrive
+from api.models import AliyunDrive, ShareCode
 from api.utils.model import get_aliyun_drive
 from common.base.magic import MagicCacheData
 from xshare.celery import app
@@ -58,3 +59,10 @@ def batch_sync_drive_size(batch=100):
         batch_queryset = drive_queryset[index * batch:(index + 1) * batch]
         if batch_queryset:
             sync_drive_size.apply_async(args=(batch_queryset,))
+
+
+@app.task
+def auth_clean_invalid_share():
+    default_timezone = timezone.get_default_timezone()
+    value = timezone.make_aware(datetime.now(), default_timezone)
+    deleted, _ = ShareCode.objects.filter(file_id__isnull=True, expired_time__lt=value).delete()

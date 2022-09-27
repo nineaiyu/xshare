@@ -35,16 +35,16 @@
               tabindex="2"
               @blur="capsTooltip = false"
               @keyup="checkCapslock"
-              @keyup.enter="handleLogin"
+              @keyup.enter="handleRegister"
           />
         </el-form-item>
       </el-tooltip>
 
-      <el-button :loading="loading" style="width:100%;margin-bottom:30px;" type="primary" @click.prevent="handleLogin">
-        登录
+      <el-button :loading="loading" plain style="width:100%;margin-bottom:30px;" type="success"
+                 @click.prevent="handleRegister">
+        注册并登录
       </el-button>
-      <el-link :underline="false" style="float: right" @click="$router.push({name:'register'})">简易注册</el-link>
-      <el-link :underline="false" @click="handleRegister">设备指纹自动登录</el-link>
+      <el-link :underline="false" style="float: right" @click="$router.push({name:'login'})">直接登录</el-link>
     </el-form>
   </div>
 </template>
@@ -56,7 +56,7 @@ import {getToken} from "@/api/user";
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
 export default {
-  name: "UserLogin",
+  name: "UserRegister",
   components: {},
   data() {
     const validateUsername = (rule, value, callback) => {
@@ -109,15 +109,7 @@ export default {
       this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
     }, handleRegister() {
       this.loading = true
-      this.register({username: this.client_id, password: this.client_id}, this.loginData).then(() => {
-        this.$router.push({path: this.redirect || '/', query: this.otherQuery})
-        this.loading = false
-      }).catch(() => {
-        this.loading = false
-      })
-    }, handleLogin() {
-      this.loading = true
-      this.login(this.loginForm, this.loginData).then(() => {
+      this.register(this.loginForm, this.loginData).then(() => {
         this.$router.push({path: this.redirect || '/', query: this.otherQuery})
         this.loading = false
       }).catch(() => {
@@ -131,7 +123,7 @@ export default {
         return acc
       }, {})
     },
-    ...mapActions(userinfoStore, ['login', 'register'])
+    ...mapActions(userinfoStore, ['register'])
   }, watch: {
     $route: {
       handler: function (route) {

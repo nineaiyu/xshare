@@ -5,6 +5,9 @@
 # author : ly_13
 # date : 2022/9/13
 from django.conf import settings
+from django.contrib import auth
+from django.contrib.auth.models import User
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -69,3 +72,29 @@ class LogoutView(APIView):
         token = RefreshToken(request.data.get('refresh'))
         token.blacklist()
         return ApiResponse()
+
+
+class RegisterView(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        client_id = data.get('client_id')
+        token = data.get('token')
+        if verify_token(token, client_id, success_once=True):
+            username = data.get('username') if data.get('username') else client_id
+            password = data.get('password') if data.get('password') else client_id
+            user = auth.authenticate(username=username, password=password, is_active=True)
+            if not user:
+                user = User.objects.create_user(username=username, password=password)
+            refresh = RefreshToken.for_user(user)
+            result = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            user.last_login = timezone.now()
+            user.save(update_fields=["last_login"])
+            result.update(**get_token_lifetime())
+            return ApiResponse(data=result)
+        return ApiResponse(code=9999, msg='token校验失败,请刷新页面重试')

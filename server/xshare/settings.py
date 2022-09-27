@@ -358,7 +358,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'api.tasks.batch_sync_drive_size',
         'schedule': crontab(hour=2, minute=2),
         'args': ()
-    }
+    }, 'auth_clean_invalid_share_job': {
+        'task': 'api.tasks.auth_clean_invalid_share',
+        'schedule': crontab(hour=3, minute=3),
+        'args': ()
+    },
 }
 
 XSHARE = '__DO_NOT_DELETE_XSHARE__'
