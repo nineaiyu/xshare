@@ -125,6 +125,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -132,6 +134,10 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        # 'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
@@ -321,7 +327,7 @@ CACHE_KEY_TEMPLATE = {
 
 # Celery Configuration Options
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html?
-CELERY_TIMEZONE = "Australia/Tasmania"
+CELERY_TIMEZONE = "Asia/Shanghai"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
@@ -366,3 +372,8 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 XSHARE = '__DO_NOT_DELETE_XSHARE__'
+HTTP_BIND_HOST = '0.0.0.0'
+HTTP_LISTEN_PORT = 8896
+# celery flower 任务监控配置
+CELERY_FLOWER_PORT = 5566
+CELERY_FLOWER_HOST = '127.0.0.1'

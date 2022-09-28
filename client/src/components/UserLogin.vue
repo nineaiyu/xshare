@@ -156,7 +156,6 @@ $light_gray: #1291ef;
 .login-container {
   min-height: 100%;
   width: 100%;
-  background-color: $bg;
   overflow: hidden;
 
   .login-form {

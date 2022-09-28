@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include, re_path
+from django.urls import include, re_path
 from rest_framework.routers import SimpleRouter
 
 from api.views.alidrive import AliyunDriveView, AliyunDriveQRView
@@ -32,16 +32,16 @@ router.register('download', DownloadView)
 router.register('share', ShareCodeView)
 urlpatterns = [
     # path('token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('login', LoginView.as_view(), name='login'),
-    path('register', RegisterView.as_view(), name='register'),
-    path('logout', LogoutView.as_view(), name='logout'),
-    path('userinfo', UserInfoView.as_view(), name='userinfo'),
-    path('qrdrive', AliyunDriveQRView.as_view(), name='qrdrive'),
-    path('upload', AliyunDriveUploadView.as_view(), name='upload'),
-    path('short', ShortView.as_view(), name='short'),
-    path('lobby', FileLobbyView.as_view(), name='lobby'),
+    re_path('login', LoginView.as_view(), name='login'),
+    re_path('register', RegisterView.as_view(), name='register'),
+    re_path('logout', LogoutView.as_view(), name='logout'),
+    re_path('userinfo', UserInfoView.as_view(), name='userinfo'),
+    re_path('qrdrive', AliyunDriveQRView.as_view(), name='qrdrive'),
+    re_path('upload', AliyunDriveUploadView.as_view(), name='upload'),
+    re_path('short', ShortView.as_view(), name='short'),
+    re_path('lobby', FileLobbyView.as_view(), name='lobby'),
     re_path(r'^many/(?P<name>\w+)$', ManyView.as_view(), name='many'),
-    path('refresh', RefreshTokenView.as_view(), name='refresh'),
-    path('', include(router.urls))
+    re_path('refresh', RefreshTokenView.as_view(), name='refresh'),
+    re_path('', include(router.urls))
 
 ]

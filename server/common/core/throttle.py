@@ -25,7 +25,7 @@ class LoginUserThrottle(SimpleRateThrottle):
     scope = "LoginUser"
 
     def get_cache_key(self, request, view):
-        if hasattr(request.user, 'uid'):
-            return request.user.uid
+        if hasattr(request.user, 'username'):
+            return request.user.username
         else:
             self.get_ident(request)

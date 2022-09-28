@@ -85,10 +85,7 @@ export default {
 
 <style scoped>
 .header {
-  background-color: #fdfdfe;
   height: 60px;
-  margin: -8px -8px 8px -8px;
-  /*box-shadow: 0 1px 5px 0 rgb(0 0 0 / 15%);*/
   line-height: 60px;
 }
 
@@ -97,7 +94,7 @@ export default {
 }
 
 .ly-header {
-  background-image: linear-gradient(to right, #92fe9d 0%, #00c9ff 100%);
+  background-image: linear-gradient(to right, #eaebee 0%, #ace0f9 100%);
 }
 
 
