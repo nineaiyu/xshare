@@ -26,7 +26,7 @@
 
         </el-col>
 
-        <el-col :span="12" style="height: calc(100vh - 180px);">
+        <el-col :span="12">
           <el-card shadow="hover">
             <template #header>
               <el-row>
@@ -109,9 +109,9 @@ export default {
   name: "FileMultiUpload",
   data() {
     const colors = [
-      {color: '#a2c236', percentage: 20},
-      {color: '#c2bf40', percentage: 40},
-      {color: '#47c43e', percentage: 60},
+      {color: '#637dff', percentage: 20},
+      {color: '#637dff', percentage: 40},
+      {color: '#637dff', percentage: 60},
       {color: '#24a016', percentage: 80},
       {color: '#23a871', percentage: 100},
     ]
@@ -194,18 +194,24 @@ export default {
 :deep(.el-progress-bar__inner) {
   text-align: center;
   border-radius: 0;
+  height: 2px;
 }
 
 :deep(.el-progress-bar__outer) {
   border-radius: 0;
+  height: 10px;
+  background-color: rgb(132, 133, 141, 0.08);
+
+}
+
+:deep(.el-progress-bar__innerText) {
+  color: var(--el-color-primary-dark-2);
 }
 
 .infinite-list {
   height: 60vh !important;
-  overflow-y: scroll;
   padding: 0;
   margin: 0;
-  list-style: none;
 }
 
 .infinite-list .infinite-list-item {
@@ -217,38 +223,20 @@ export default {
   color: var(--el-color-primary);
 }
 
-.infinite-list .infinite-list-item + .list-item {
-  margin-top: 10px;
-}
-
 .scroll {
-  height: 100%;
-  /*这里需要首先固定高度*/
   overflow-y: scroll;
-  /*我们一般习惯为纵向有滚动条，横向为固定*/
   overflow-x: hidden;
 }
-
-/* 修改滚动条样式 */
 .scroll::-webkit-scrollbar {
-  width: 3px;
-  /*设置滚动条的宽度*/
+  width: 4px;
 }
-
-/* 滚动区域的样式 */
 .scroll::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  /*设置滚动条的圆角*/
   -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-  /*设置内阴影*/
   background: rgb(81, 193, 238, 0.2);
-  /*设置滚动条的颜色*/
 }
-
-/* 滚动条的背景样式 */
 .scroll::-webkit-scrollbar-track {
-  /* -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); */
-  border-radius: 0;
+  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
 </style>

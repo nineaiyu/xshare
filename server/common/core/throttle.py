@@ -11,12 +11,12 @@ import hashlib
 from rest_framework.throttling import SimpleRateThrottle
 
 
-class VisitThrottle(SimpleRateThrottle):
-    """短连接用户访问频率限制1"""
-    scope = "ShortAccessUser1"
+class UploadThrottle(SimpleRateThrottle):
+    """上传速率限制"""
+    scope = "UploadFile"
 
     def get_cache_key(self, request, view):
-        return 'visit_access_' + self.get_ident(request) + hashlib.md5(
+        return 'upload_file_' + self.get_ident(request) + hashlib.md5(
             request.META.get('HTTP_USER_AGENT', '').encode("utf-8")).hexdigest()
 
 

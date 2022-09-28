@@ -18,6 +18,7 @@ from api.utils.model import get_aliyun_drive
 from common.base.utils import AesBaseCrypt
 from common.cache.storage import UploadPartInfoCache
 from common.core.response import ApiResponse
+from common.core.throttle import UploadThrottle
 from common.utils.token import generate_alphanumeric_token_of_length
 
 logger = logging.getLogger(__file__)
@@ -51,6 +52,7 @@ def save_file_info(complete, request, drive_obj):
 
 
 class AliyunDriveUploadView(APIView):
+    throttle_classes = [UploadThrottle]
 
     def get(self, request):
         n_time = time.time()

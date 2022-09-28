@@ -55,6 +55,12 @@ service.interceptors.response.use(
                     type: 'error',
                     duration: 5 * 1000
                 })
+            } else if (res.code === 999) {
+                ElMessage({
+                    message: res.detail || 'Error',
+                    type: 'error',
+                    duration: 5 * 1000
+                })
             } else
                 ElMessage({
                     message: res.msg || 'Error',
@@ -100,6 +106,12 @@ service.interceptors.response.use(
                     location.reload()
                 })
             }
+        } else if (error.response && error.response.status === 429) {
+            ElMessage({
+                message: error.response.data.detail || 'Error',
+                type: 'error',
+                duration: 5 * 1000
+            })
         }
         console.log('err' + error) // for debug
         ElMessage({
