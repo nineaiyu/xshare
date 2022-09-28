@@ -5,7 +5,7 @@
         <template #header>
           最新文件分享
         </template>
-        <el-scrollbar style="height: calc(100vh - 300px);">
+        <el-scrollbar v-loading="loading" style="height: calc(100vh - 300px);">
           <div v-for="share in share_data" :key="share.short" class="scrollbar-item">
             <el-popover
                 :width="200"
@@ -53,7 +53,7 @@
         <template #header>
           文件下载榜单
         </template>
-        <el-scrollbar style="height: calc(100vh - 300px);">
+        <el-scrollbar v-loading="loading" style="height: calc(100vh - 300px);">
           <div v-for="file in file_data" :key="file.file_id" class="scrollbar-item">
             <el-popover
                 :width="200"
@@ -105,7 +105,8 @@ export default {
     return {
       share_data: [],
       file_data: [],
-      show: true
+      show: true,
+      loading: false
     }
   },
   mounted() {
@@ -114,9 +115,13 @@ export default {
   methods: {
     diskSize,
     initData() {
+      this.loading = true
       getLobby().then(res => {
         this.file_data = res.data.file_data
         this.share_data = res.data.share_data
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
       })
     },
     getDesc(share) {

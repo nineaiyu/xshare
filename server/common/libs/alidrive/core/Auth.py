@@ -254,5 +254,5 @@ class Auth(object):
     def _log_response(self, response: requests.Response):
         """打印响应日志"""
         self.log.info(
-            f'{response.request.method} {response.url} {response.status_code} {len(response.content)}'
+            f'{response.request.method} {response.url} {response.status_code} {response.content}'
         )

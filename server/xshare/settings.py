@@ -147,7 +147,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'LoginUser': '100/m',
-        'UploadFile': '200/m',
+        'UploadFile': '1000/m',
     },
     'DEFAULT_PAGINATION_CLASS': 'common.core.response.PageNumber',
     'DEFAULT_PERMISSION_CLASSES': [

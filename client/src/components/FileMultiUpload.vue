@@ -236,7 +236,8 @@ export default {
   background: rgb(81, 193, 238, 0.2);
 }
 .scroll::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  //-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  border-radius: 0;
 }
 
 </style>

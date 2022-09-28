@@ -7,7 +7,7 @@ import {tokenStore} from "@/store";
 // create an axios instance
 const service = axios.create({
     // baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-    baseURL: 'https://app.hehelucky.cn/api/v1', // url = base url + request url
+    baseURL: `${process.env.base_env.baseUrl}api/v1`, // url = base url + request url
     // withCredentials: true, // send cookies when cross-domain requests
     timeout: 60000 // request timeout
 })

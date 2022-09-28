@@ -1,12 +1,27 @@
 <template>
   <div class="footer">
-    © 2022 xshare 京ICP备668686886号 公网安备 98868998号
+    <el-link :underline="false"> {{ footer.copyright }}</el-link>
+    &bull;
+    <el-link :href="footer.ipcBeiAn.url" :underline="false" rel="nofollow noopener"
+             target="_blank">{{ footer.ipcBeiAn.text }}
+    </el-link>
+    &bull;
+    <el-link :href="footer.gongAnBeiAn.url" :underline="false">
+      <i :style="{background:`url(${beianLogo})  0 0/100%`,width:'20px',height:'20px'}"/>{{ footer.gongAnBeiAn.text }}
+    </el-link>
   </div>
 </template>
 
 <script>
+const footer = process.env.base_env.footer
 export default {
-  name: "ShareFooter"
+  name: "ShareFooter",
+  data() {
+    return {
+      footer,
+      beianLogo: require('@/assets/beianlogo.png')
+    }
+  }
 }
 </script>
 
