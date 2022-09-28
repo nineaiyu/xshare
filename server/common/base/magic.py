@@ -200,6 +200,12 @@ class MagicCacheResponse(object):
         self.key_func = key_func
         self.invalid_time = invalid_time
 
+    @staticmethod
+    def invalid_cache(key):
+        cache_key = f'magic_cache_response_{key}'
+        res = cache.delete(cache_key)
+        logger.warning(f"invalid_response_cache cache_key:{cache_key} result:{res}")
+
     def __call__(self, func):
         this = self
 

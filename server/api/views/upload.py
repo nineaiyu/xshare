@@ -13,7 +13,7 @@ from django.db.models import F
 from rest_framework.views import APIView
 
 from api.models import FileInfo, AliyunDrive
-from api.tasks import delay_sync_drive_size
+from api.tasks import delay_sync_drive_size, delay_refresh_lobby_cache
 from api.utils.model import get_aliyun_drive
 from common.base.utils import AesBaseCrypt
 from common.cache.storage import UploadPartInfoCache
@@ -48,6 +48,7 @@ def save_file_info(complete, request, drive_obj):
         **defaults
     )
     delay_sync_drive_size(drive_obj)
+    delay_refresh_lobby_cache()
 
 
 class AliyunDriveUploadView(APIView):

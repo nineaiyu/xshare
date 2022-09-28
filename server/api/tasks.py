@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from api.models import AliyunDrive, ShareCode
 from api.utils.model import get_aliyun_drive
-from common.base.magic import MagicCacheData
+from common.base.magic import MagicCacheData, cache_response
 from xshare.celery import app
 
 logger = logging.getLogger(__file__)
@@ -66,3 +66,14 @@ def auth_clean_invalid_share():
     default_timezone = timezone.get_default_timezone()
     value = timezone.make_aware(datetime.now(), default_timezone)
     deleted, _ = ShareCode.objects.filter(file_id__isnull=True, expired_time__lt=value).delete()
+
+
+@shared_task
+def refresh_lobby_cache():
+    cache_response.invalid_cache('FileLobbyView_get')
+
+
+@MagicCacheData.make_cache(timeout=60)
+def delay_refresh_lobby_cache():
+    c_task = refresh_lobby_cache.apply_async(eta=eta_second(60))
+    logger.info(f'delay_refresh_lobby_cache exec {c_task}')

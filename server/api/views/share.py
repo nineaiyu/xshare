@@ -13,6 +13,7 @@ from django_filters import rest_framework as filters
 from rest_framework.filters import OrderingFilter
 
 from api.models import ShareCode, FileInfo
+from api.tasks import delay_refresh_lobby_cache
 from api.utils.serializer import ShareCodeSerializer
 from common.core.filter import OwnerUserFilter
 from common.core.modelset import BaseModelSet
@@ -80,5 +81,6 @@ class ShareCodeView(BaseModelSet):
                 share_info['expired_time'] = expired_time
                 share_code_obj = ShareCode.objects.create(**share_info)
                 share_code_obj.file_id.add(*file_id_list_obj)
+                delay_refresh_lobby_cache()
                 return ApiResponse(data={'short': share_code_obj.short, 'password': share_code_obj.password})
         return ApiResponse(code=1001, msg='添加失败')
