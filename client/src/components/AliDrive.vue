@@ -227,12 +227,12 @@ export default {
     }, timeFormatter(row) {
       return formatTime(row.created_time)
     },
-    addDrive(title, user_id=null) {
+    addDrive(title, user_id = null) {
       getQrDrive().then(res => {
         this.qrcode = res.data.qr_link
         this.sid = res.data.sid
         this.loop = true
-        this.loopCheckScan(title,user_id)
+        this.loopCheckScan(title, user_id)
       })
     },
     delStorage(row) {
@@ -272,7 +272,7 @@ export default {
             this.stopLoop()
             this.getTableData()
           } else {
-            this.loopCheckScan(title,user_id)
+            this.loopCheckScan(title, user_id)
           }
         })
       }
