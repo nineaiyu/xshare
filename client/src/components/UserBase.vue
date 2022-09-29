@@ -1,15 +1,14 @@
 <template>
   <div style="text-align: center;">
     <el-card shadow="hover" style="max-width: 70%;margin: 0 auto">
-      <el-card class="username">
+      <div class="username">
         <div style="margin-top: 20px">
           <el-avatar :size="80" :src="createBase64(userinfo.first_name)"/>
         </div>
         <input v-model="userinfo.first_name" maxlength="100" @focusout="update"/>
-      </el-card>
-      <el-card>
-        <router-view></router-view>
-      </el-card>
+      </div>
+      <el-divider/>
+      <router-view/>
     </el-card>
   </div>
 </template>

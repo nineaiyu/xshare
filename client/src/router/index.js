@@ -1,4 +1,4 @@
-import {createRouter, createWebHashHistory} from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import {getAccessToken, getRefreshToken, setToken} from '@/utils/auth'
@@ -52,11 +52,11 @@ const routes = [
             {
                 path: 'info',
                 name: 'userinfo',
-                component: import('@/components/UserInfo'),
+                component: () => import('@/components/UserInfo'),
             }, {
                 path: 'pwd',
                 name: 'password',
-                component: import('@/components/UserPwd'),
+                component: () => import('@/components/UserPwd'),
             },
         ]
     }, {
@@ -68,7 +68,7 @@ const routes = [
 ]
 
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes: routes
 });
 
