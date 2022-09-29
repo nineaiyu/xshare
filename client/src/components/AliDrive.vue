@@ -63,7 +63,7 @@
     <el-table-column align="center" label="是否激活" prop="active" width="90">
       <template #default="scope">
         <el-tag v-if="scope.row.active">已激活</el-tag>
-        <el-tag v-else type="danger" @click="addDrive('激活')">待激活</el-tag>
+        <el-tag v-else type="danger" @click="addDrive('激活',scope.row.user_id)">待激活</el-tag>
       </template>
     </el-table-column>
     <el-table-column align="center" label="是否私有" prop="private" width="65">
@@ -114,7 +114,7 @@
       <template #default="scope">
         <div style="display: flex;justify-content: space-around;flex-direction: column;height: 100px">
           <el-row>
-            <el-button size="small" @click="addDrive('更新')">更新授权</el-button>
+            <el-button size="small" @click="addDrive('更新',scope.row.user_id)">更新授权</el-button>
           </el-row>
           <el-row>
             <el-button size="small" @click="cleanDrive(scope.row)">清理空间</el-button>
@@ -227,12 +227,12 @@ export default {
     }, timeFormatter(row) {
       return formatTime(row.created_time)
     },
-    addDrive(title) {
+    addDrive(title, user_id=null) {
       getQrDrive().then(res => {
         this.qrcode = res.data.qr_link
         this.sid = res.data.sid
         this.loop = true
-        this.loopCheckScan(title)
+        this.loopCheckScan(title,user_id)
       })
     },
     delStorage(row) {
@@ -260,9 +260,9 @@ export default {
         })
       })
     },
-    loopCheckScan(title) {
+    loopCheckScan(title, user_id) {
       if (this.loop) {
-        checkQrDrive({sid: this.sid}).then(res => {
+        checkQrDrive({sid: this.sid, user_id}).then(res => {
           if (res.data.pending_status) {
             if (res.data.data.msg) {
               ElMessage.success(title + "授权失败，" + res.data.data.msg)
@@ -272,7 +272,7 @@ export default {
             this.stopLoop()
             this.getTableData()
           } else {
-            this.loopCheckScan(title)
+            this.loopCheckScan(title,user_id)
           }
         })
       }

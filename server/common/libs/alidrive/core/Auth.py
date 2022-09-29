@@ -12,7 +12,6 @@ from api.models import AliyunDrive
 from common.base.magic import MagicCacheData
 from common.libs.alidrive.core.Config import *
 from common.libs.alidrive.types import Token, DataClass
-from common.cache.storage import AliDriveCache
 
 
 def get_token_from_db(drive_obj):
@@ -31,7 +30,7 @@ def save_token_to_db(drive_obj, token):
         defaults[f] = getattr(token, f)
         # setattr(drive_obj, f, getattr(token, f))
     AliyunDrive.objects.filter(owner_id=drive_obj.owner_id).update_or_create(defaults=defaults, user_id=token.user_id)
-    AliDriveCache(token.user_id).del_storage_cache()
+    MagicCacheData.invalid_cache(f'get_aliyun_drive_{token.user_id}')
 
 
 class Auth(object):
@@ -97,7 +96,6 @@ class Auth(object):
 
         if refresh_token:
             self.log.debug('登录方式 refresh_token')
-            print(self.drive_obj)
             self.token.user_id = self.drive_obj.user_id
             self._refresh_token(refresh_token)
             return
@@ -155,7 +153,7 @@ class Auth(object):
             self.log.warning('未知错误 可能二维码已经过期')
             return {'code': 1, 'msg': '未知错误 可能二维码已经过期'}
 
-    @MagicCacheData.make_cache(timeout=30, key_func=lambda *args: args[0].token.user_id)
+    @MagicCacheData.make_cache(timeout=5, key_func=lambda *args: args[0].token.user_id)
     def _refresh_token(self, refresh_token=None):
         """刷新 token"""
         if refresh_token is None:
@@ -178,6 +176,7 @@ class Auth(object):
             self.log.warning(f'刷新 token 失败, {response}')
             self.drive_obj.active = False
             self.drive_obj.save(update_fields=['active', 'updated_time'])
+            MagicCacheData.invalid_cache(f'get_aliyun_drive_{self.drive_obj.user_id}')
             return False
 
         self.session.headers.update({

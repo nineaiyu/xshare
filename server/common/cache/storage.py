@@ -56,12 +56,6 @@ class RedisCacheBase(object):
         return True
 
 
-class AliDriveCache(RedisCacheBase):
-    def __init__(self, user_id):
-        self.cache_key = f"{CACHE_KEY_TEMPLATE.get('aliyun_drive_auth_key')}_{user_id}"
-        super().__init__(self.cache_key)
-
-
 class TokenManagerCache(RedisCacheBase):
     def __init__(self, key, release_id):
         self.cache_key = f"{CACHE_KEY_TEMPLATE.get('make_token_key')}_{key.lower()}_{release_id}"

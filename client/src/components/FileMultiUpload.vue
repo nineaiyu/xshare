@@ -148,7 +148,18 @@ export default {
       return fileList.sort((a, b) => {
         return b.progress.upload_time - a.progress.upload_time
       })
+    }, getUploadFileList(fileList, type) {
+      // type:
+      // 0:队列中
+      // 1:正在上传
+      // 2:上传完成
+      // 3:手动取消上传
+      // 4:上传失败，超过最大失败测试
+      return fileList.filter(res => {
+        return res.status === type
+      })
     }, getUploadingFile(fileList) {
+      // 正在上传
       return fileList.filter(res => {
         return res.status === 1
       })

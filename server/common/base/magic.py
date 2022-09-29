@@ -142,8 +142,9 @@ def magic_call_in_times(call_time=24 * 3600, call_limit=6, key=None):
 
 class MagicCacheData(object):
     @staticmethod
-    def make_cache(timeout=60 * 10, invalid_time=0, key_func=None):
+    def make_cache(timeout=60 * 10, invalid_time=0, key_func=None, timeout_func=None):
         """
+        :param timeout_func:
         :param timeout:  数据缓存的时候，单位秒
         :param invalid_time: 数据缓存提前失效时间，单位秒。该cache有效时间为 cache_time-invalid_time
         :param key_func: cache唯一标识，默认为所装饰函数名称
@@ -157,6 +158,10 @@ class MagicCacheData(object):
                 if key_func:
                     cache_key = f'{cache_key}_{key_func(*args, **kwargs)}'
 
+                cache_time = timeout
+                if timeout_func:
+                    cache_time = timeout_func(*args, **kwargs)
+
                 n_time = time.time()
                 res = cache.get(cache_key)
                 if res:
@@ -165,16 +170,16 @@ class MagicCacheData(object):
                         logger.warning(f'locker is exist but data status is not ok. wait...')
                         res = cache.get(cache_key)
 
-                if res and n_time - res.get('c_time', n_time) < timeout - invalid_time:
+                if res and n_time - res.get('c_time', n_time) < cache_time - invalid_time:
                     logger.info(f"exec {func} finished. cache_key:{cache_key}  cache data exist result:{res}")
                     return res['data']
                 else:
                     res = {'c_time': n_time, 'data': '', 'status': 'ready'}
-                    cache.set(cache_key, res, timeout)
+                    cache.set(cache_key, res, cache_time)
                     try:
                         res['data'] = func(*args, **kwargs)
                         res['status'] = 'ok'
-                        cache.set(cache_key, res, timeout)
+                        cache.set(cache_key, res, cache_time)
                         logger.info(
                             f"exec {func} finished. time:{time.time() - n_time}  cache_key:{cache_key} result:{res}")
                     except Exception as e:

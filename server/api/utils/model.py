@@ -9,32 +9,26 @@ import logging
 import time
 from urllib.parse import parse_qs
 
-from common.libs.alidrive import Aligo
 from django.utils import timezone
 
 from api.models import AliyunDrive, FileInfo
-from common.base.magic import run_function_by_locker
-from common.cache.storage import DownloadUrlCache, AliDriveCache
+from common.base.magic import MagicCacheData
+from common.cache.storage import DownloadUrlCache
+from common.libs.alidrive import Aligo
 
 logger = logging.getLogger(__file__)
 
 
-def get_locker(*args, **kwargs):
-    return {
-        'locker_key': f'get_aliyun_drive_{args[0].user_id}'
-    }
+def cache_time(*args, **kwargs):
+    drive_obj = args[0]
+    default_timezone = timezone.get_default_timezone()
+    value = timezone.make_aware(datetime.datetime.now(), default_timezone)
+    return (drive_obj.expire_time - value).seconds
 
 
-@run_function_by_locker(lock_func=get_locker)
+@MagicCacheData.make_cache(timeout=5, key_func=lambda *args: args[0].user_id, timeout_func=cache_time)
 def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
-    drive_cache = AliDriveCache(drive_obj.user_id)
-    cache_data = drive_cache.get_storage_cache()
-    if not cache_data:
-        cache_data = Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
-        default_timezone = timezone.get_default_timezone()
-        value = timezone.make_aware(datetime.datetime.now(), default_timezone)
-        drive_cache.set_storage_cache(cache_data, timeout=(drive_obj.expire_time - value).seconds)
-    return cache_data
+    return Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
 
 
 def get_download_url(file_obj: FileInfo, download=False) -> dict:

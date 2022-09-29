@@ -14,11 +14,13 @@ from rest_framework.views import APIView
 from api.models import AliyunDrive, FileInfo, ShareCode
 from api.utils.model import get_aliyun_drive
 from api.utils.serializer import AliyunDriveSerializer
+from common.base.magic import MagicCacheData
 from common.base.utils import AesBaseCrypt
-from common.cache.storage import DriveQrCache, DownloadUrlCache, AliDriveCache
+from common.cache.storage import DriveQrCache, DownloadUrlCache
 from common.core.filter import OwnerUserFilter
 from common.core.modelset import BaseModelSet
 from common.core.response import PageNumber, ApiResponse
+from common.libs.alidrive import Aligo
 from common.libs.alidrive.core.Auth import Auth
 from common.utils.pending import get_pending_result
 
@@ -61,8 +63,8 @@ class AliyunDriveView(BaseModelSet):
 
     def create(self, request, *args, **kwargs):
         self.kwargs = request.data
-        if self.kwargs.get('action') == 'clean':
-            instance = self.get_object()
+        instance = self.get_object()
+        if self.kwargs.get('action') == 'clean' and instance.enable and instance.active:
             clean_drive_file(instance)
             FileInfo.objects.filter(aliyun_drive_id=instance).delete()
             ShareCode.objects.filter(owner_id=request.user, file_id__isnull=True).delete()
@@ -72,7 +74,7 @@ class AliyunDriveView(BaseModelSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = super().update(request, *args, **kwargs).data
-        AliDriveCache(instance.user_id).del_storage_cache()
+        MagicCacheData.invalid_cache(f'get_aliyun_drive_{instance.user_id}')
         return ApiResponse(data=data)
 
 
@@ -93,9 +95,25 @@ class AliyunDriveQRView(APIView):
         return ApiResponse(data={'qr_link': qr_link, 'sid': sid})
 
     def post(self, request):
+        sid = request.data['sid']
+        user_id = request.data.get('user_id')
+        if user_id:
+            auto_obj = AliyunDrive.objects.filter(owner_id=request.user, user_id=user_id).first()
+            if auto_obj.refresh_token and auto_obj.default_drive_id:
+                try:
+                    ali_obj = Aligo(auto_obj, refresh_token=auto_obj.refresh_token)
+                    result = ali_obj.get_default_drive()
+                    if result.drive_id == auto_obj.default_drive_id:
+                        auto_obj.total_size = result.total_size
+                        auto_obj.used_size = result.used_size
+                        auto_obj.active = True
+                        auto_obj.save(update_fields=['total_size', 'used_size', 'active', 'updated_time'])
+                        return ApiResponse(data={'pending_status': True, 'data': {}})
+                except Exception as e:
+                    logger.warning(f'auth check failed {e}')
+
         drive_obj = AliyunDrive(owner_id=request.user)
         ali_auth = Auth(drive_obj)
-        sid = request.data['sid']
         data = DriveQrCache(sid).get_storage_cache()
         if data:
             status, result = get_pending_result(ali_auth.check_scan_qr, expect_func, data=data, run_func_count=1,
@@ -103,7 +121,7 @@ class AliyunDriveQRView(APIView):
             if status and result.get('data', {}).get('code') == 0:
                 ali_drive_obj = AliyunDrive.objects.filter(owner_id=request.user,
                                                            user_id=ali_auth.token.user_id).first()
-                AliDriveCache(ali_drive_obj.user_id).del_storage_cache()
+                MagicCacheData.invalid_cache(f'get_aliyun_drive_{ali_drive_obj.user_id}')
                 ali_obj = get_aliyun_drive(ali_drive_obj)
                 default_drive_obj = ali_obj.get_default_drive()
                 ali_drive_obj.total_size = default_drive_obj.total_size

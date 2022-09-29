@@ -187,6 +187,7 @@ function multiRun(upload, keyList, func) {
                         fileInfo.status = 0
                         fileInfo.failTryCount -= 1
                         if (fileInfo.failTryCount < 1) {
+                            fileInfo.status = 4
                             ElMessage.error(`${fileInfo.file.name} 超过最大重试次数，停止上传`)
                         } else {
                             ElMessage.error(`${fileInfo.file.name} 上传失败，正在重试`)
