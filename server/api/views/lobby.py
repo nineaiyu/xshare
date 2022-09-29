@@ -27,8 +27,8 @@ class FileLobbyView(APIView):
     def get(self, request):
         default_timezone = timezone.get_default_timezone()
         value = timezone.make_aware(datetime.datetime.now(), default_timezone)
-        share_queryset = ShareCode.objects.filter(expired_time__gt=value).filter(
-            Q(password__isnull=True) | Q(password='')).order_by('-created_time')[:20]
+        share_queryset = ShareCode.objects.filter(expired_time__gt=value, file_id__isnull=False).filter(
+            Q(password__isnull=True) | Q(password='')).order_by('-created_time').distinct()[:20]
 
         file_queryset = FileInfo.objects.filter(sharecode__expired_time__gt=value).filter(
             Q(sharecode__password__isnull=True) | Q(sharecode__password='')).order_by('-downloads').distinct()[:20]
