@@ -1,7 +1,6 @@
 <template>
   <el-container>
     <el-main style="text-align: center;">
-
       <el-row>
         <el-col :span="12">
           <el-upload
@@ -34,11 +33,37 @@
                   <div v-if="upload.multiFileList.length===0" style="text-align: left">
                     文件上传列表
                   </div>
-                  <div v-else style="text-align: left">
-                    <div v-if="getUploadingFile(upload.multiFileList).length > 0">文件上传中，还剩
-                      {{ getUnUploadNumber(upload.multiFileList) }} 项，共 {{ upload.multiFileList.length }} 项
+                  <div v-else style="text-align: left;font-size: small;line-height: 32px">
+                    <div v-if="upload.multiFileList.length>100">
+                      <span>{{ getUploadFileLength(upload.multiFileList, 2) }}已上传完成，共 {{ upload.multiFileList.length }} 项</span>
                     </div>
-                    <span v-else>上传完成，共 {{ upload.multiFileList.length }} 项</span>
+                    <div v-else>
+                      <span v-if="getUploadFileLength(upload.multiFileList,2) ===upload.multiFileList.length ">上传完成，共 {{
+                          upload.multiFileList.length
+                        }} 项</span>
+                      <div v-else>
+                        <span v-if="getUploadFileLength(upload.multiFileList,4)">{{
+                            getUploadFileLength(upload.multiFileList, 4)
+                          }}项失败了&nbsp;&nbsp;</span>
+                        <span v-if="getUploadFileLength(upload.multiFileList,3)">{{
+                            getUploadFileLength(upload.multiFileList, 3)
+                          }}项被取消&nbsp;&nbsp;</span>
+                        <span v-if="getUploadFileLength(upload.multiFileList,2)">{{
+                            getUploadFileLength(upload.multiFileList, 2)
+                          }}项已完成&nbsp;&nbsp;</span>
+                        <span v-if="getUploadFileLength(upload.multiFileList,0)">{{
+                            getUploadFileLength(upload.multiFileList, 0)
+                          }}项等待中&nbsp;&nbsp;</span>
+                        <span> 共 {{ upload.multiFileList.length }} 项&nbsp;&nbsp;</span>
+                        <el-button plain size="small" type="warning" @click="cancelAll">全部取消</el-button>
+                      </div>
+                    </div>
+                    <el-button v-if="getUploadFileLength(upload.multiFileList,4)" size="small" @click="tryFailed(4)">
+                      重试失败
+                    </el-button>
+                    <el-button v-if="getUploadFileLength(upload.multiFileList,3)" size="small" @click="tryFailed(3)">
+                      重试取消
+                    </el-button>
                   </div>
                 </el-col>
                 <el-col :span="5">
@@ -122,6 +147,22 @@ export default {
       upload,
     }
   }, methods: {
+    tryFailed(status) {
+      this.upload.multiFileList.forEach(file => {
+        if (file.status === status) {
+          file.status = 0
+          file.failTryCount = 3
+        }
+      })
+      multiUpload()
+    },
+    cancelAll() {
+      this.upload.multiFileList.forEach(file => {
+        if ([0, 1].indexOf(file.status) !== -1) {
+          file.status = 3
+        }
+      })
+    },
     handleChange(num) {
       this.upload.processNumber = num
       multiUpload()
@@ -138,6 +179,9 @@ export default {
       }
     },
     beforeUpload(raw) {
+      if (this.getUploadFileLength(this.upload.multiFileList, 2) === this.upload.multiFileList.length) {
+        this.upload.init()
+      }
       addUploadFile(raw)
       return false
     },
@@ -148,7 +192,9 @@ export default {
       return fileList.sort((a, b) => {
         return b.progress.upload_time - a.progress.upload_time
       })
-    }, getUploadFileList(fileList, type) {
+    }, getUploadFileLength(fileList, status) {
+      return this.getUploadStatusFile(fileList, status).length
+    }, getUploadStatusFile(fileList, status) {
       // type:
       // 0:队列中
       // 1:正在上传
@@ -156,33 +202,27 @@ export default {
       // 3:手动取消上传
       // 4:上传失败，超过最大失败测试
       return fileList.filter(res => {
-        return res.status === type
+        return res.status === status
       })
-    }, getUploadingFile(fileList) {
-      // 正在上传
-      return fileList.filter(res => {
-        return res.status === 1
+    }, getUploadFileList(fileList) {
+      const result = [[], [], [], [], []]
+      fileList.forEach(res => {
+        result[res.status].push(res)
       })
-    }, getUnUploadFile(fileList) {
-      return fileList.filter(res => {
-        return res.status !== 1
+      result.forEach(res => {
+        this.sortFileStatus(res)
       })
-    }, getUnUploadNumber(fileList) {
-      return fileList.filter(res => {
-        return res.status !== 2
-      }).length
+      return result
     }, getUploadFile(fileList) {
-      let newFileList = []
-      this.getUploadingFile(fileList).forEach(res => {
-        newFileList.push(res)
-      })
-      this.getUnUploadFile(this.sortFileStatus(fileList)).forEach(res => {
-        newFileList.push(res)
-      })
-      return newFileList
+      if (fileList.length > 100) {
+        return this.sortFileStatus(fileList)
+      } else {
+        const result = this.getUploadFileList(fileList)
+        return [...result[1], ...result[0], ...result[4], ...result[3], ...result[2]]
+      }
     }
   }, watch: {
-    'uploa1d.multiFileList': {
+    'upload1.multiFileList': {
       handler: function (upload) {
         upload.forEach(res => {
           if (res.status === 1) {
@@ -238,14 +278,17 @@ export default {
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
 .scroll::-webkit-scrollbar {
   width: 4px;
 }
+
 .scroll::-webkit-scrollbar-thumb {
   border-radius: 10px;
   -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
   background: rgb(81, 193, 238, 0.2);
 }
+
 .scroll::-webkit-scrollbar-track {
   //-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
   border-radius: 0;

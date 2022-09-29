@@ -78,4 +78,10 @@ export const uploadStore = defineStore('upload', {
         processNumber: 3,
         promise: []
     }),
+    actions: {
+        init() {
+            this.promise = []
+            this.multiFileList = []
+        }
+    }
 })

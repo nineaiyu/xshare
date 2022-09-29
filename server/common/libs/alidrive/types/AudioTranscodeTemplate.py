@@ -1,8 +1,8 @@
 """..."""
 from dataclasses import dataclass
 
-from .MediaTransCodeTemplate import MediaTransCodeTemplate
 from .Enum import MediaTranscodeStatus
+from .MediaTransCodeTemplate import MediaTransCodeTemplate
 
 
 @dataclass

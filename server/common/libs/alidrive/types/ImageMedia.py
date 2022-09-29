@@ -2,9 +2,9 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from .FaceThumbnail import FaceThumbnail
 from .CroppingSuggestionItem import CroppingSuggestionItem
 from .DataClass import DataClass
+from .FaceThumbnail import FaceThumbnail
 from .ImageQuality import ImageQuality
 from .SystemTag import SystemTag
 

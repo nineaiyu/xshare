@@ -9,8 +9,8 @@ from typing import Union
 import requests
 
 from api.models import AliyunDrive
-from common.libs.alidrive.core.Config import *
 from common.libs.alidrive.core import *
+from common.libs.alidrive.core.Config import *
 from common.libs.alidrive.request import *
 from common.libs.alidrive.response import *
 from common.libs.alidrive.types import BaseUser, BaseDrive, Null, BaseFile
@@ -218,4 +218,3 @@ class BaseAligo:
                         # self._auth.log.warning(i)
                         pass
                 yield i
-

@@ -12,6 +12,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
 
 from api.models import AliyunDrive, FileInfo, ShareCode
+from api.tasks import delay_refresh_lobby_cache
 from api.utils.model import get_aliyun_drive
 from api.utils.serializer import AliyunDriveSerializer
 from common.base.magic import MagicCacheData
@@ -44,6 +45,7 @@ def clean_drive_file(instance):
         result_list = ali_obj.move_file_to_trash(result.file_id)
         DownloadUrlCache(instance.default_drive_id, '*').del_many()
         logger.debug(f'{instance} move {result} to trash.result:{result_list}')
+    delay_refresh_lobby_cache()
 
 
 class AliyunDriveView(BaseModelSet):
