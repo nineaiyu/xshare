@@ -107,14 +107,13 @@ async function ChunkedUpload(fileInfo, fileHashInfo, uploadExtra, partInfo, reso
     // ElMessage.info(fileInfo.file_name + ' 不支持秒传，正在分块上传中')
     const progress = fileInfo.progress
     progress.speed = '上传中'
-    let index = 0
     let count = 0
     const partNumber = 20  // 统计20分块的下载速度
     const chunkSize = uploadExtra.part_size
-    for (let start = 0; start < progress.file_size; start += chunkSize) {
-        const chunk = fileInfo.file.slice(start, start + chunkSize + 1);
-        // let res = await fetch(partInfo[index].upload_url, { method: "put", body: chunk})
 
+    for (let index = 0; index < partInfo.length; index++) {
+        const chunk = fileInfo.file.slice(index * chunkSize, (index + 1) * chunkSize);
+        // let res = await fetch(partInfo[index].upload_url, { method: "put", body: chunk})
         let res = await fetchProgress(fileInfo, partInfo[index].upload_url, {method: "put", body: chunk}, pr => {
             progress.progress = Math.ceil((pr.loaded + index * chunkSize) * 100 / progress.file_size)
             progress.upload_size = pr.loaded + index * chunkSize
@@ -135,8 +134,8 @@ async function ChunkedUpload(fileInfo, fileHashInfo, uploadExtra, partInfo, reso
             count += 1
             break
         }
-        index += 1
     }
+
     if (count === 0) {
         uploadComplete(fileHashInfo).then(res => {
             if (res.data.check_status === true) {
