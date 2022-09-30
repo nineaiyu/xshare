@@ -72,27 +72,27 @@ class BaseAligo:
     @property
     def default_drive_id(self):
         """默认 drive_id"""
-        return self._auth.token.default_drive_id
+        return self._auth.drive_obj.default_drive_id
 
     @property
     def default_sbox_drive_id(self):
         """默认保险箱 drive_id"""
-        return self._auth.token.default_sbox_drive_id
+        return self._auth.drive_obj.default_sbox_drive_id
 
     @property
     def user_name(self):
         """用户名"""
-        return self._auth.token.user_name
+        return self._auth.drive_obj.user_name
 
     @property
     def user_id(self):
         """用户 id"""
-        return self._auth.token.user_id
+        return self._auth.drive_obj.user_id
 
     @property
     def nick_name(self):
         """昵称"""
-        return self._auth.token.nick_name
+        return self._auth.drive_obj.nick_name
 
     def _result(self, response: requests.Response,
                 cls: Generic[DataType],

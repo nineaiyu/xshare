@@ -173,20 +173,19 @@ class Create(BaseAligo):
 
         file_info = DataClass.fill_attrs(FileInfo, file_info)
         if drive_id is None:
-            drive_id = self.default_drive_id
+            drive_id = self._auth.drive_obj.default_drive_id
 
         if file_info.file_size > 1024:  # 1kB
             # 1. pre_hash
             part_info = self._pre_hash(file_info=file_info, parent_file_id=parent_file_id, drive_id=drive_id,
                                        check_name_mode=check_name_mode)
-            up_cache = UploadPartInfoCache(file_info.sid)
-            up_cache.set_storage_cache(part_info)
+            UploadPartInfoCache(file_info.sid).set_storage_cache(part_info)
             return part_info, part_info.code == 'PreHashMatched'
         else:
             return CreateFileResponse, True
 
     def get_md5_token(self):
-        return str(int(hashlib.md5(self._auth.token.access_token.encode()).hexdigest()[:16], 16))
+        return str(int(hashlib.md5(self._auth.drive_obj.access_token.encode()).hexdigest()[:16], 16))
 
     def get_upload_extra(self) -> dict:
         return {'part_size': Create.__UPLOAD_CHUNK_SIZE, 'headers': UNI_HEADERS}

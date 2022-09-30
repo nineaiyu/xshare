@@ -29,8 +29,10 @@ def save_token_to_db(drive_obj, token):
     for f in fields:
         defaults[f] = getattr(token, f)
         # setattr(drive_obj, f, getattr(token, f))
-    AliyunDrive.objects.filter(owner_id=drive_obj.owner_id).update_or_create(defaults=defaults, user_id=token.user_id)
+    drive_obj, _ = AliyunDrive.objects.filter(owner_id=drive_obj.owner_id).update_or_create(defaults=defaults,
+                                                                                            user_id=token.user_id)
     MagicCacheData.invalid_cache(f'get_aliyun_drive_{token.user_id}')
+    return drive_obj
 
 
 class Auth(object):
@@ -107,7 +109,7 @@ class Auth(object):
         })
 
     def _save(self):
-        save_token_to_db(self.drive_obj, self.token)
+        self.drive_obj = save_token_to_db(self.drive_obj, self.token)
 
     def get_login_qr(self) -> dict:
         response = self.session.get(
@@ -153,12 +155,12 @@ class Auth(object):
             self.log.warning('未知错误 可能二维码已经过期')
             return {'code': 1, 'msg': '未知错误 可能二维码已经过期'}
 
-    @MagicCacheData.make_cache(timeout=5, key_func=lambda *args: args[0].token.user_id)
+    @MagicCacheData.make_cache(timeout=3, key_func=lambda *args: args[0].token.user_id)
     def _refresh_token(self, refresh_token=None):
         """刷新 token"""
         if refresh_token is None:
-            refresh_token = self.token.refresh_token
-        self.log.info('刷新 token')
+            refresh_token = self.drive_obj.refresh_token
+        self.log.info(f'刷新 token refresh_token {refresh_token}')
         response = self.session.post(
             API_HOST + V2_ACCOUNT_TOKEN,
             json={
@@ -182,7 +184,7 @@ class Auth(object):
         self.session.headers.update({
             'Authorization': self.token.access_token
         })
-        return Token
+        return self.token
 
     _VERIFY_SSL = True
 
@@ -221,9 +223,15 @@ class Auth(object):
                     )
                     share_token = r.json()['share_token']
                     headers['x-share-token'].share_token = share_token
+                time.sleep(1)
                 continue
 
             if status_code == 429 or status_code == 500:
+                if 'value for name Authorization' in response.text:
+                    self._refresh_token()
+                    time.sleep(1)
+                    continue
+
                 if self._SLEEP_TIME_SEC is None:
                     sleep_int = 5 ** (i % 4)
                 else:

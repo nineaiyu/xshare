@@ -167,11 +167,13 @@ class MagicCacheData(object):
                 if res:
                     while res.get('status') != 'ok':
                         time.sleep(0.5)
-                        logger.warning(f'locker is exist but data status is not ok. wait...')
+                        logger.warning(
+                            f'exec {func} wait. data status is not ok. cache_time:{cache_time} cache_key:{cache_key}  cache data exist result:{res}')
                         res = cache.get(cache_key)
 
                 if res and n_time - res.get('c_time', n_time) < cache_time - invalid_time:
-                    logger.info(f"exec {func} finished. cache_key:{cache_key}  cache data exist result:{res}")
+                    logger.info(
+                        f"exec {func} finished. cache_time:{cache_time} cache_key:{cache_key} cache data exist result:{res}")
                     return res['data']
                 else:
                     res = {'c_time': n_time, 'data': '', 'status': 'ready'}
@@ -181,10 +183,10 @@ class MagicCacheData(object):
                         res['status'] = 'ok'
                         cache.set(cache_key, res, cache_time)
                         logger.info(
-                            f"exec {func} finished. time:{time.time() - n_time}  cache_key:{cache_key} result:{res}")
+                            f"exec {func} finished. time:{time.time() - n_time} cache_time:{cache_time} cache_key:{cache_key} result:{res}")
                     except Exception as e:
                         logger.error(
-                            f"exec {func} failed. time:{time.time() - n_time}  cache_key:{cache_key} Exception:{e}")
+                            f"exec {func} failed. time:{time.time() - n_time}  cache_time:{cache_time} cache_key:{cache_key} Exception:{e}")
 
                     return res['data']
 

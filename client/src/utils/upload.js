@@ -191,7 +191,9 @@ function multiRun(upload, keyList, func) {
                         } else {
                             ElMessage.error(`${fileInfo.file.name} 上传失败，正在重试`)
                             console.log(fileInfo.file.name, err)
-                            multiUpload()
+                            setTimeout(() => {
+                                multiUpload()
+                            }, (3 - fileInfo.failTryCount) * 1000)
                         }
                     }
                 })

@@ -28,7 +28,12 @@ def cache_time(*args, **kwargs):
 
 @MagicCacheData.make_cache(timeout=5, key_func=lambda *args: args[0].user_id, timeout_func=cache_time)
 def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
-    return Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
+    drive_obj = AliyunDrive.objects.filter(pk=drive_obj.pk, active=True).first()
+    if drive_obj:
+        if cache_time(*[drive_obj]) > 0:
+            return Aligo(drive_obj)
+        else:
+            return Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
 
 
 def get_download_url(file_obj: FileInfo, download=False) -> dict:
