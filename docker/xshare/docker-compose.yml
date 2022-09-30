@@ -1,0 +1,31 @@
+version: '3.2'
+
+networks:
+    xshare:
+        external: true
+        name: xshare
+
+services:
+  xshare:
+    container_name: xshare
+    restart: always
+    image: 'xshare'
+    working_dir: /data/server
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../../server:/data/server
+      - ../../data/xshare/files:/data/server/files
+      - ../../data/logs/xshare/:/data/server/logs
+      - ../../nginx.conf.d:/data/cert
+    networks:
+         xshare:
+           ipv4_address: 172.31.32.100
+    external_links:
+        - mariadb:mariadb 
+        - redis:redis
+    sysctls:
+        - net.core.somaxconn=4096
+    ports:
+        - 8896:8896
+        - 5661:5661
+

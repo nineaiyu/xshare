@@ -89,7 +89,7 @@ DATABASES = {
         'NAME': 'xshare',
         'USER': 'xshare',
         'PASSWORD': 'KGzKjZpWBp4R4RSa',
-        'HOST': '127.0.0.1',
+        'HOST': 'mariadb',
         'PORT': 3306,
         'CONN_MAX_AGE': 600,
         # 设置MySQL的驱动
@@ -226,7 +226,7 @@ SIMPLE_JWT = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://%s:%s/1" % ('127.0.0.1', 6379),
+        "LOCATION": "redis://%s:%s/1" % ('redis', 6379),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {"max_connections": 100},
@@ -238,9 +238,12 @@ CACHES = {
 }
 
 BASE_LOG_DIR = os.path.join(BASE_DIR, "logs", "api")
+TMP_LOG_DIR = os.path.join(BASE_DIR, "logs", "tmp")
 
 if not os.path.isdir(BASE_LOG_DIR):
     os.makedirs(BASE_LOG_DIR)
+if not os.path.isdir(TMP_LOG_DIR):
+    os.makedirs(TMP_LOG_DIR)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

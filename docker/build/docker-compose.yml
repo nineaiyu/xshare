@@ -1,0 +1,24 @@
+version: '3.2'
+
+services:
+  buildxshare:
+    image: 'xshare'
+    build:
+      context: ../../server
+      dockerfile: Dockerfile
+    command:
+        - echo
+        - success
+
+  buildclient:
+    container_name: buildclient
+    image: 'node:16.17.1-slim'
+    working_dir: /client
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../../client:/client
+      - ../../data/web/:/web
+    command:
+        - bash
+        - -c
+        - yarn config set registry https://registry.npm.taobao.org && yarn install && yarn build && ([ ! -e /web/client ] && \cp -a dist /web/client || \cp -a dist/* /web/client/)  && echo build success

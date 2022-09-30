@@ -1,0 +1,27 @@
+version: '3.2'
+
+networks:
+    xshare:
+        external: true
+        name: xshare
+
+services:
+  nginx:
+    container_name: nginx
+    restart: always
+    image: 'nginx:1.21.3'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../../data/web:/data
+      - ./nginx.conf.d:/etc/nginx/conf.d
+      - ../../data/logs/nginx:/var/log/nginx
+    networks:
+         xshare:
+           ipv4_address: 172.31.32.200
+    ports:
+        - 80:80
+        - 443:443
+    external_links:
+        - xshare:xshare
+    depends_on:
+        - xshare
