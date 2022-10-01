@@ -21,8 +21,6 @@ sh init.sh
 
 #### 配置域名和证书
 ```shell script
-nginx.conf.d/app.hehelucky.cn.key
-nginx.conf.d/app.hehelucky.cn.pem
 nginx.conf.d/xshare.conf
 ```
 
@@ -97,7 +95,7 @@ pip install -U setuptools pip
 pip install -r requirements.txt
 ```
 
-##### 创建数据库,并迁移数据【可选】
+##### 创建数据库,并迁移数据【安装服务可选】
 ```shell
 dnf install mariadb-server -y
 ```
@@ -123,7 +121,7 @@ DATABASES = {
 }
 ```
 
-##### redis配置【可选】
+##### redis配置【安装服务可选】
 ```shell
 dnf install redis -y
 ```
