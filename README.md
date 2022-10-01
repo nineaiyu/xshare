@@ -15,11 +15,9 @@ git clone https://github.com/nineaiyu/xshare
 cd /data/xshare/docker/init
 sh init.sh
 ```
-#### 域名证书准备
-- 域名： app.hehelucky.cn
-- 证书（nginx）
-  - app.hehelucky.cn.key
-  - app.hehelucky.cn.pem
+#### 域名准备
+- 域名： xshare.hehelucky.cn
+- 证书（nginx）[可选，参考文档末尾说明]
 
 #### 配置域名和证书
 ```shell script
@@ -156,4 +154,54 @@ python manage.py migrate
 
 # -u nginx 指需要启动的用户，需要有nginx用户，或者其他用户也行
 python manage.py start all -u nginx 
+```
+
+
+### 域名SSL支持
+- 证书可以从阿里云或者腾讯云申请，每次可免费申请一年
+- 还可以使用免费的letsencrypt证书
+
+#### 使用免费的letsencrypt证书，通过acme.sh申请免费证书，该证书有效期3个月，支持自动续订到期时间
+###### 启动acme容器，用与申请证书和自动续订
+```shell
+cd docker/acme
+docker-compose up -d
+```
+需要其他准备好 一个邮箱和域名
+
+下面操作，需要将域名[xshare.hehelucky.cn] 替换为自己的域名，邮箱[nineven@qq.com] 替换为自己的邮箱
+
+
+```shell
+# 首次操作需要通过邮箱[nineven@qq.com]注册一个临时授权，并且邮箱可以收到证书到期提醒
+docker exec acme --register-account -m nineven@qq.com
+
+# 申请域名[xshare.hehelucky.cn]证书
+docker exec acme --issue -d xshare.hehelucky.cn --webroot /data/web/
+
+# 将申请好的证书拷贝到NGINX配置目录，进行配置
+docker exec acme --install-cert -d xshare.hehelucky.cn --key-file /etc/nginx/conf.d/xshare.hehelucky.cn.key --fullchain-file /etc/nginx/conf.d/xshare.hehelucky.cn.pem
+```
+
+#### 配置SSL证书
+```shell
+vim docker/nginx/nginx.conf.d/xshare.conf
+```
+增加下面ssl支持配置
+```shell
+     listen 443 ssl http2;
+     ssl_certificate        /etc/nginx/conf.d/xshare.hehelucky.cn.pem;
+     ssl_certificate_key    /etc/nginx/conf.d/xshare.hehelucky.cn.key;
+     ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
+     ssl_ciphers EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;
+     ssl_prefer_server_ciphers on;
+     ssl_session_cache shared:SSL:10m;
+     ssl_session_timeout 10m;
+     add_header Strict-Transport-Security "max-age=31536000";
+```
+重新nginx容器
+```shell
+cd docker/nginx
+docker-compse down
+docker-compose up -d
 ```

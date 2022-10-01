@@ -1,0 +1,14 @@
+version: '3.2'
+
+services:
+  nginx:
+    container_name: acme
+    restart: always
+    image: 'neilpang/acme.sh'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../../data/acme:/acme.sh
+      - ../../data/web/client:/data/web
+      - ../nginx/nginx.conf.d:/etc/nginx/conf.d
+
+    command: daemon
