@@ -54,6 +54,7 @@ import {userinfoStore} from "@/store";
 import {mapActions} from "pinia/dist/pinia";
 import {getToken} from "@/api/user";
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
+import {ElMessage} from "element-plus";
 
 export default {
   name: "UserRegister",
@@ -108,6 +109,10 @@ export default {
       const {key} = e
       this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
     }, handleRegister() {
+      if (this.loginForm.username === this.loginForm.password) {
+        ElMessage.error('用户名和密码不能一致')
+        return
+      }
       this.loading = true
       this.register(this.loginForm, this.loginData).then(() => {
         this.$router.push({path: this.redirect || '/', query: this.otherQuery})

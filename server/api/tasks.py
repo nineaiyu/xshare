@@ -9,9 +9,11 @@ import logging
 from datetime import datetime, timedelta
 
 from celery import shared_task
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.utils import timezone
 
-from api.models import AliyunDrive, ShareCode
+from api.models import AliyunDrive, ShareCode, FileInfo
 from api.utils.model import get_aliyun_drive
 from common.base.magic import MagicCacheData, cache_response
 from xshare.celery import app
@@ -77,3 +79,40 @@ def refresh_lobby_cache():
 def delay_refresh_lobby_cache():
     c_task = refresh_lobby_cache.apply_async(eta=eta_second(60))
     logger.info(f'delay_refresh_lobby_cache exec {c_task}')
+
+
+@app.task
+def clean_visitor_user():
+    default_timezone = timezone.get_default_timezone()
+    value = timezone.make_aware(datetime.now() - settings.TEMP_USER_CLEAN_TIME, default_timezone)
+    user_queryset = User.objects.filter(is_active=True, is_superuser=False, is_staff=False, last_name='0')
+    file_user_queryset = user_queryset.filter(fileinfo__isnull=False, last_login__lte=value)
+
+    items = FileInfo.objects.filter(owner_id__in=file_user_queryset).values('owner_id__username',
+                                                                            'aliyun_drive_id').distinct()
+
+    drive_info_dict = {}
+
+    for item in items:
+        aliyun_drive_id = item.get('aliyun_drive_id')
+        username = item.get('owner_id__username')
+        owner_ids = drive_info_dict.get(aliyun_drive_id)
+        if not owner_ids:
+            drive_info_dict[aliyun_drive_id] = [username]
+        else:
+            drive_info_dict[aliyun_drive_id].append(username)
+    for drive_id, username_list in drive_info_dict:
+        drive_obj = AliyunDrive.objects.filter(pk=drive_id, active=True).first()
+        try:
+            ali_obj = get_aliyun_drive(drive_obj)
+            res = ali_obj.get_folder_by_path(f"{settings.XSHARE}/visitor")
+            file_list = ali_obj.get_file_list(parent_file_id=res.file_id)
+            file_id_list = []
+            for file in file_list:
+                if file.type == 'folder' and file.name in username_list:
+                    file_id_list.append(file.file_id)
+            ali_obj.batch_move_to_trash(file_id_list)
+            logger.info(f'{drive_obj} clean visitor user data {username_list} success')
+        except Exception as e:
+            logger.error(f'{drive_obj} clean visitor user data failed {e}')
+    user_queryset.delete()

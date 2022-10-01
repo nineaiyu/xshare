@@ -43,8 +43,6 @@ service.interceptors.response.use(
 
         // if the custom code is not 1000, it is judged as an error.
         if (res.code !== 1000) {
-
-
             if (res.code === 9999) {
                 setTimeout(() => {
                     location.reload()

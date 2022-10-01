@@ -7,6 +7,7 @@
 import datetime
 import logging
 
+from django.conf import settings
 from django.db.models import Sum
 from django.utils import timezone
 from rest_framework import serializers
@@ -28,7 +29,7 @@ class AliyunDriveSerializer(serializers.ModelSerializer):
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
-        fields = ['username', 'first_name', 'email', 'last_login']
+        fields = ['username', 'first_name', 'email', 'last_login', 'expired_time']
         read_only_fields = list(
             set([x.name for x in models.User._meta.fields]) - {"first_name"})
 
@@ -36,6 +37,15 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     def get_first_name(self, obj):
         return obj.first_name if obj.first_name else obj.username
+
+    expired_time = serializers.SerializerMethodField()
+
+    def get_expired_time(self, obj):
+        if obj.last_name == "0":
+            default_timezone = timezone.get_default_timezone()
+            return timezone.make_naive(obj.last_login + settings.TEMP_USER_CLEAN_TIME, default_timezone)
+        else:
+            return "1"
 
 
 class UserInfoUpdateSerializer(serializers.ModelSerializer):
@@ -53,7 +63,7 @@ class UserInfoUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         old_password = validated_data.get("old_password")
         new_password = validated_data.get("new_password")
-        if old_password and new_password:
+        if old_password and new_password and instance.last_name != "0":
             if not instance.check_password(validated_data.get("old_password")):
                 raise Exception('旧密码校验失败')
             instance.set_password(validated_data.get("new_password"))

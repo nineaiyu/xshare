@@ -44,7 +44,7 @@
         登录
       </el-button>
       <el-link :underline="false" style="float: right" @click="$router.push({name:'register'})">简易注册</el-link>
-      <el-link :underline="false" @click="handleRegister">设备指纹自动登录</el-link>
+      <el-link :underline="false" @click="handleRegister">游客自动登录</el-link>
     </el-form>
   </div>
 </template>
@@ -54,6 +54,7 @@ import {userinfoStore} from "@/store";
 import {mapActions} from "pinia/dist/pinia";
 import {getToken} from "@/api/user";
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
+import {ElMessage} from "element-plus";
 
 export default {
   name: "UserLogin",
@@ -116,6 +117,10 @@ export default {
         this.loading = false
       })
     }, handleLogin() {
+      if (this.loginForm.username === this.loginForm.password) {
+        ElMessage.error('用户名和密码不能一致')
+        return
+      }
       this.loading = true
       this.login(this.loginForm, this.loginData).then(() => {
         this.$router.push({path: this.redirect || '/', query: this.otherQuery})

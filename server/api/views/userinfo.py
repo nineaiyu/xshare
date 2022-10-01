@@ -29,7 +29,7 @@ def get_token_lifetime():
 class LoginView(TokenObtainPairView):
 
     def get(self, request):
-        token = make_token(request.query_params.get('client_id'), force_new=True)
+        token = make_token(request.query_params.get('client_id'), time_limit=180, force_new=True)
         data = {'token': token}
         data.update(get_token_lifetime())
         return ApiResponse(data=data)
@@ -87,7 +87,13 @@ class RegisterView(APIView):
             password = data.get('password') if data.get('password') else client_id
             user = auth.authenticate(username=username, password=password, is_active=True)
             if not user:
-                user = User.objects.create_user(username=username, password=password)
+                last_name = "1"
+                first_name = f"会员_{username[:10]}"
+                if username == password == client_id:
+                    last_name = "0"
+                    first_name = f"游客_{username[:10]}"
+                user = User.objects.create_user(username=username, password=password, last_name=last_name,
+                                                first_name=first_name)
             refresh = RefreshToken.for_user(user)
             result = {
                 'refresh': str(refresh),

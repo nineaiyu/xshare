@@ -372,6 +372,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'api.tasks.auth_clean_invalid_share',
         'schedule': crontab(hour=3, minute=3),
         'args': ()
+    }, 'clean_visitor_user_job': {
+        'task': 'api.tasks.clean_visitor_user',
+        'schedule': crontab(hour=2, minute=30),
+        'args': ()
     },
 }
 
@@ -381,3 +385,5 @@ HTTP_LISTEN_PORT = 8896
 # celery flower 任务监控配置
 CELERY_FLOWER_PORT = 5566
 CELERY_FLOWER_HOST = '127.0.0.1'
+# 设备指纹登录自动清理时间
+TEMP_USER_CLEAN_TIME = timedelta(days=7)

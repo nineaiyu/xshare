@@ -88,6 +88,8 @@ def expect_func(result, *args, **kwargs):
 class AliyunDriveQRView(APIView):
 
     def get(self, request):
+        if request.user.last_name == "0":
+            return ApiResponse(code=1001, msg='游客用户无法添加云盘')
         drive_obj = AliyunDrive(owner_id=request.user)
         ali_auth = Auth(drive_obj)
         login_qr_data = ali_auth.get_login_qr()

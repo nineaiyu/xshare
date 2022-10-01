@@ -67,7 +67,8 @@ class AliyunDriveUploadView(APIView):
                                                                                      'upload_complete']:
 
             file_name = file_info.get("file_name", generate_alphanumeric_token_of_length(32))
-            file_info['file_name'] = f'{settings.XSHARE}/{request.user.username}/{file_name}'
+            owner_dir = "member" if request.user.last_name == "1" else "visitor"
+            file_info['file_name'] = f'{settings.XSHARE}/{owner_dir}/{request.user.username}/{file_name}'
             drive_queryset = AliyunDrive.objects.filter(active=True, enable=True,
                                                         total_size__gte=F('used_size') + file_info.get('file_size', 0),
                                                         access_token__isnull=False)

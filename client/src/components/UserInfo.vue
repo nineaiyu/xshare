@@ -6,13 +6,21 @@
       <el-link :underline="false">{{ userinfo.username }}</el-link>
     </el-form-item>
     <el-divider/>
-    <el-form-item label="邮箱">
-      <el-link :underline="false">{{ userinfo.email }}</el-link>
-    </el-form-item>
-    <el-divider/>
+    <!--    <el-form-item label="邮箱">-->
+    <!--      <el-link :underline="false">{{ userinfo.email }}</el-link>-->
+    <!--    </el-form-item>-->
+    <!--    <el-divider/>-->
 
     <el-form-item label="最近登录">
       <el-link :underline="false">{{ formatTime(userinfo.last_login) }}</el-link>
+    </el-form-item>
+
+    <el-form-item v-if="userinfo.expired_time!=='1'" label="失效时间">
+      <el-link :underline="false">
+        <el-tooltip content="游客用户，失效时间内未登录，系统将自动清理该用户所有数据">
+          {{ formatTime(userinfo.expired_time) }}
+        </el-tooltip>
+      </el-link>
     </el-form-item>
   </el-form>
 </template>

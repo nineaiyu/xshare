@@ -8,6 +8,7 @@ export const userinfoStore = defineStore('userinfo', {
         first_name: '',
         email: '',
         last_login: '',
+        expired_time: '',
         token: getAccessToken(),
         refreshToken: getRefreshToken()
     }),
