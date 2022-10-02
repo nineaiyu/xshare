@@ -103,7 +103,7 @@ class Auth(object):
             return
 
         self.token = get_token_from_db(self.drive_obj)
-
+        self.log.debug('登录方式 database access_token')
         self.session.headers.update({
             'Authorization': self.token.access_token
         })

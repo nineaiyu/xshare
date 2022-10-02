@@ -19,18 +19,23 @@ from common.libs.alidrive import Aligo
 logger = logging.getLogger(__file__)
 
 
+def get_now_time():
+    default_timezone = timezone.get_default_timezone()
+    return timezone.make_aware(datetime.datetime.now(), default_timezone)
+
+
 def cache_time(*args, **kwargs):
     drive_obj = args[0]
-    default_timezone = timezone.get_default_timezone()
-    value = timezone.make_aware(datetime.datetime.now(), default_timezone)
-    return (drive_obj.expire_time - value).seconds
+    if drive_obj.expire_time > get_now_time():
+        return (drive_obj.expire_time - get_now_time()).seconds
+    return 1
 
 
 @MagicCacheData.make_cache(timeout=5, key_func=lambda *args: args[0].user_id, timeout_func=cache_time)
 def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
     drive_obj = AliyunDrive.objects.filter(pk=drive_obj.pk, active=True).first()
     if drive_obj:
-        if cache_time(*[drive_obj]) > 0:
+        if drive_obj.expire_time > get_now_time():
             return Aligo(drive_obj)
         else:
             return Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
