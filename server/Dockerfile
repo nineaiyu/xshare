@@ -30,4 +30,4 @@ RUN addgroup --system --gid 101 nginx \
 
 
 #ENTRYPOINT ["python", "manage.py", "start", "all","-u","nginx"]
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
