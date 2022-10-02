@@ -3,4 +3,5 @@
 #
 
 cd ../build/
-docker-compose up buildclient buildxshare
+docker-compose build
+docker-compose up buildclient
