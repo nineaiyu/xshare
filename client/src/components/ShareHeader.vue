@@ -72,11 +72,16 @@ export default {
       this.$router.push({name: key})
     },
     logout() {
-      logout({refresh: getRefreshToken()}).then(() => {
-        removeToken()
-        ElMessage.success('账户注销成功')
-        this.$router.push({name: 'login'})
-      })
+      const refresh = getRefreshToken()
+      if (refresh) {
+        logout({refresh}).then(() => {
+          removeToken()
+          ElMessage.success('账户注销成功')
+          this.$router.push({name: 'login'})
+        }).catch(() => {
+          removeToken()
+        })
+      }
     }
   }, mounted() {
   }
