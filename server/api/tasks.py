@@ -81,7 +81,7 @@ def delay_refresh_lobby_cache():
     logger.info(f'delay_refresh_lobby_cache exec {c_task}')
 
 
-# @app.task
+@app.task
 def clean_visitor_user():
     default_timezone = timezone.get_default_timezone()
     value = timezone.make_aware(datetime.now() - settings.TEMP_USER_CLEAN_TIME, default_timezone)
