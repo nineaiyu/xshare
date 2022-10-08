@@ -81,7 +81,7 @@ def delay_refresh_lobby_cache():
     logger.info(f'delay_refresh_lobby_cache exec {c_task}')
 
 
-@app.task
+# @app.task
 def clean_visitor_user():
     default_timezone = timezone.get_default_timezone()
     value = timezone.make_aware(datetime.now() - settings.TEMP_USER_CLEAN_TIME, default_timezone)
@@ -92,7 +92,7 @@ def clean_visitor_user():
                                                                             'aliyun_drive_id').distinct()
 
     drive_info_dict = {}
-
+    logger.info(f'items:{items}')
     for item in items:
         aliyun_drive_id = item.get('aliyun_drive_id')
         username = item.get('owner_id__username')
@@ -101,7 +101,8 @@ def clean_visitor_user():
             drive_info_dict[aliyun_drive_id] = [username]
         else:
             drive_info_dict[aliyun_drive_id].append(username)
-    for drive_id, username_list in drive_info_dict:
+    logger.info(f"drive_info_dict:{drive_info_dict}")
+    for drive_id, username_list in drive_info_dict.items():
         drive_obj = AliyunDrive.objects.filter(pk=drive_id, active=True).first()
         try:
             ali_obj = get_aliyun_drive(drive_obj)
@@ -115,4 +116,5 @@ def clean_visitor_user():
             logger.info(f'{drive_obj} clean visitor user data {username_list} success')
         except Exception as e:
             logger.error(f'{drive_obj} clean visitor user data failed {e}')
+    logger.info(f'delete {user_queryset}')
     user_queryset.delete()
