@@ -91,20 +91,20 @@ export function createBase64(str) {
         str = str[getRandomNum(0, str.length - 1)]
     }
     const can = document.createElement("canvas");
-    const width = 160;
-    const height = 160;
+    const width = 200;
+    const height = 200;
+    const fontsize = 160
     Object.assign(can, {width, height});
 
     const cans = can.getContext("2d");
     if (cans) {
-        cans.font = "130px Arial";
-        // cans.fillStyle = "rgb(8,115,199)";
-        cans.shadowBlur = 20;
+        cans.font = `${fontsize}px Arial`;
+        cans.shadowBlur = 5;
         cans.shadowColor = "black";
         cans.fillStyle = randomColor();
         cans.textAlign = "center";
         cans.textBaseline = "middle";
-        cans.fillText(str, width / 2, height / 2 + 10);
+        cans.fillText(str, width / 2, height / 2 + fontsize / 10);
     }
     return can.toDataURL("image/png");
 }
