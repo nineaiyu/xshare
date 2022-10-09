@@ -85,8 +85,9 @@ def delay_refresh_lobby_cache():
 def clean_visitor_user():
     default_timezone = timezone.get_default_timezone()
     value = timezone.make_aware(datetime.now() - settings.TEMP_USER_CLEAN_TIME, default_timezone)
-    user_queryset = User.objects.filter(is_active=True, is_superuser=False, is_staff=False, last_name='0')
-    file_user_queryset = user_queryset.filter(fileinfo__isnull=False, last_login__lte=value)
+    user_queryset = User.objects.filter(is_active=True, is_superuser=False, is_staff=False, last_name='0',
+                                        last_login__lte=value)
+    file_user_queryset = user_queryset.filter(fileinfo__isnull=False)
 
     items = FileInfo.objects.filter(owner_id__in=file_user_queryset).values('owner_id__username',
                                                                             'aliyun_drive_id').distinct()
