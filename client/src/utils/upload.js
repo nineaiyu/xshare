@@ -146,6 +146,7 @@ async function ChunkedUpload(fileInfo, fileHashInfo, uploadExtra, partInfo, reso
                 progress.progress = 100
                 progress.speed = '上传成功'
                 fileInfo.file = null
+                fileInfo.file_id = res.data.file_id
             } else {
                 ElMessage.error(fileHashInfo.file_name + ' 上传失败')
                 reject()
@@ -243,6 +244,7 @@ function uploadAsync(fileInfo) {
                             fileInfo.status = 2
                             fileInfo.upload_time = new Date()
                             fileInfo.file = null
+                            fileInfo.file_id = cRes.data.file_id
                             multiUpload()
                             resolve()
                         } else {

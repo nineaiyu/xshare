@@ -1,5 +1,6 @@
 <template>
   <el-container>
+    <share-file v-model:file-id-list="fileIdList" v-model:share-visible="shareVisible"/>
     <el-main style="text-align: center;">
       <el-row>
         <el-col :span="12">
@@ -40,7 +41,7 @@
                     <div v-else>
                       <span v-if="getUploadFileLength(upload.multiFileList,2) ===upload.multiFileList.length ">上传完成，共 {{
                           upload.multiFileList.length
-                        }} 项</span>
+                        }} 项 &nbsp;&nbsp;<el-button plain size="small" @click="shareFun">直接分享</el-button></span>
                       <div v-else>
                         <span v-if="getUploadFileLength(upload.multiFileList,4)">{{
                             getUploadFileLength(upload.multiFileList, 4)
@@ -145,8 +146,20 @@ export default {
       colors,
       rawFile: {name: '', size: 0},
       upload,
+      uploadVisible: false,
+      shareVisible: false,
+      fileIdList: []
     }
   }, methods: {
+    shareFun() {
+      this.fileIdList = []
+      this.upload.multiFileList.forEach(file => {
+        if (file.status === 2) {
+          this.fileIdList.push(file.file_id)
+        }
+      })
+      this.shareVisible = true
+    },
     tryFailed(status) {
       this.upload.multiFileList.forEach(file => {
         if (file.status === status) {

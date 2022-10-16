@@ -1,57 +1,6 @@
 <template>
 
-  <el-dialog v-model="shareVisible" :close-on-click-modal="false" center
-             draggable
-             title="创建分享连接"
-             width="600px">
-    <el-form
-        :model="formShare"
-        label-position="right"
-        label-width="100px"
-        style="max-width: 480px"
-    >
-      <el-form-item label="文件数量">
-        <el-tag>{{ selectedData.length }}</el-tag>
-      </el-form-item>
-      <el-form-item label="下载密码">
-        <div style="margin-right: 20px">
-          <el-input v-model="formShare.password"
-                    clearable
-                    maxlength="16"
-                    placeholder="默认无密码"
-                    show-word-limit
-          />
-        </div>
-        <el-button @click="makeRandomPwd">生成</el-button>
-      </el-form-item>
-      <el-form-item label="过期时间">
-        <el-date-picker
-            v-model="formShare.expired_time"
-            :shortcuts="shortcuts"
-            placeholder="请选择过期时间"
-            type="datetime"
-            value-format="x"
-        />
-      </el-form-item>
-      <el-form-item label="备注信息">
-        <el-input v-model="formShare.description"
-                  :autosize="{ minRows: 3}"
-                  clearable
-                  maxlength="220"
-                  placeholder="请添加备注信息"
-                  show-word-limit
-                  type="textarea"/>
-      </el-form-item>
-    </el-form>
-
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="shareVisible = false">取消</el-button>
-        <el-button type="primary" @click="shareManyFileFun">确定</el-button>
-      </span>
-    </template>
-  </el-dialog>
-
+  <share-file v-model:file-id-list="fileIdList" v-model:share-visible="shareVisible"/>
   <div class="filter-container">
     <el-input v-model="listQuery.name" class="filter-item" clearable placeholder="文件名称" style="width: 140px;"
               @keyup.enter="handleFilter"/>
@@ -141,10 +90,10 @@
 
 <script>
 import {delFile, delManyFile, downloadManyFile, getDownloadUrl, getFile, updateFile} from "@/api/file";
-import {diskSize, downloadFile, formatTime, getLocationOrigin, getRandomStr} from "@/utils";
+import {diskSize, downloadFile, formatTime, getLocationOrigin} from "@/utils";
 import {ElMessage, ElMessageBox} from "element-plus";
 import Pagination from "@/components/base/Pagination";
-import {addShare} from "@/api/share";
+import ShareFile from "@/components/base/ShareFile";
 
 const sortOptions = [
   {label: '上传时间 Ascending', key: 'created_at'},
@@ -157,39 +106,10 @@ const sortOptions = [
 export default {
   name: "FileManager",
   components: {
+    ShareFile,
     Pagination
   },
   data() {
-    const shortcuts = [
-      {
-        text: '今天',
-        value: new Date(),
-      },
-      {
-        text: '三天',
-        value: () => {
-          const date = new Date()
-          date.setTime(date.getTime() + 3600 * 1000 * 24 * 3)
-          return date
-        },
-      },
-      {
-        text: '一星期',
-        value: () => {
-          const date = new Date()
-          date.setTime(date.getTime() + 3600 * 1000 * 24 * 7)
-          return date
-        },
-      }, {
-        text: '一年',
-        value: () => {
-          const date = new Date()
-          date.setTime(date.getTime() + 3600 * 1000 * 24 * 365)
-          return date
-        },
-      },
-    ]
-    const date = new Date()
     return {
       isLoading: false,
       shareVisible: false,
@@ -198,18 +118,14 @@ export default {
       prefixUrl: getLocationOrigin(),
       total: 0,
       sortOptions,
-      shortcuts,
       listQuery: {
         page: 1,
         size: 10,
         user_name: null,
         ordering: sortOptions[1].key,
         description: null
-      }, formShare: {
-        expired_time: date.getTime() + 3600 * 1000 * 24 * 7,
-        password: '',
-        description: '',
-      }
+      },
+      fileIdList: []
     }
   }, methods: {
     shareFile(row) {
@@ -218,15 +134,11 @@ export default {
     },
     showShareDialog() {
       if (this.selectedData && this.selectedData.length > 0) {
-        this.formShare.password = ''
-        this.formShare.description = ''
+        this.fileIdList = this.getFileIdList()
         this.shareVisible = true
       } else {
         ElMessage.warning("请选择待分享的文件")
       }
-    },
-    makeRandomPwd() {
-      this.formShare.password = getRandomStr(8)
     },
     getFileIdList() {
       let file_id_list = []
@@ -240,14 +152,6 @@ export default {
         res.data.forEach(url => {
           downloadFile(url.download_url)
         })
-      })
-    },
-    shareManyFileFun() {
-      addShare({file_id_list: this.getFileIdList(), share_info: this.formShare}).then(() => {
-        ElMessage.success("操作成功")
-        this.shareVisible = false
-      }).catch(() => {
-        this.shareVisible = false
       })
     },
     delManyFileFun() {

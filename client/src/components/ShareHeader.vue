@@ -13,7 +13,7 @@
 
       <el-menu-item index="lobby">文件大厅</el-menu-item>
       <el-menu-item index="share">分享记录</el-menu-item>
-      <el-menu-item index="uploads">发送文件</el-menu-item>
+      <el-menu-item index="uploads">上传文件</el-menu-item>
       <el-menu-item index="files">文件管理</el-menu-item>
       <el-menu-item index="drive">云盘管理</el-menu-item>
       <div class="flex-grow"/>
