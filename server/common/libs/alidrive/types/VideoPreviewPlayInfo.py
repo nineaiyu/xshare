@@ -5,8 +5,8 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from .Enum import VideoTemplateID
 from .DataClass import DataClass
+from .Enum import VideoTemplateID
 
 
 @dataclass
@@ -30,6 +30,9 @@ class Meta(DataClass):
 class LiveTranscodingTask(DataClass):
     """..."""
     template_id: VideoTemplateID = None
+    template_height: str = None
+    template_width: str = None
+    template_name: str = None
     status: str = None
     stage: str = None
     url: str = None

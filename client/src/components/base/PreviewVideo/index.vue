@@ -35,6 +35,7 @@ export default {
         control: true, //是否显示控制
         controlBtns: [
           "audioTrack",
+          "quality",
           "speedRate",
           "volume",
           "setting",

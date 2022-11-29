@@ -7,16 +7,79 @@
 import datetime
 import logging
 import time
+from typing import List
 from urllib.parse import parse_qs
 
+from django.urls import reverse
 from django.utils import timezone
 
 from api.models import AliyunDrive, FileInfo
 from common.base.magic import MagicCacheData
 from common.cache.storage import DownloadUrlCache
 from common.libs.alidrive import Aligo
+from common.libs.alidrive.types.VideoPreviewPlayInfo import LiveTranscodingTask
+from common.utils.token import make_token
 
 logger = logging.getLogger(__file__)
+
+
+def quoted(string):
+    return '"%s"' % string
+
+
+class StreamInfo(object):
+    bandwidth = None
+    program_id = None
+    resolution = None
+    codecs = None
+    name = None
+
+    def __init__(self, **kwargs):
+        self.bandwidth = kwargs.get("bandwidth")
+        self.program_id = kwargs.get("program_id")
+        self.resolution = kwargs.get("resolution")
+        self.codecs = kwargs.get("codecs")
+        self.name = kwargs.get("name")
+
+    def __str__(self):
+        stream_inf = []
+        if self.program_id is not None:
+            stream_inf.append('PROGRAM-ID=%d' % self.program_id)
+        if self.bandwidth is not None:
+            stream_inf.append('BANDWIDTH=%d' % self.bandwidth)
+        if self.resolution is not None:
+            stream_inf.append('RESOLUTION=' + self.resolution)
+        if self.codecs is not None:
+            stream_inf.append('CODECS=' + quoted(self.codecs))
+
+        if self.name is not None:
+            stream_inf.append('NAME=' + self.name)
+        return ",".join(stream_inf)
+
+
+def format_m3u8_data(preview_play_info: List[LiveTranscodingTask]):
+    start_str = '#EXTM3U'
+    for preview in preview_play_info:
+        if preview.status == 'finished':
+            if preview.template_id == 'SD':
+                stream_inf = StreamInfo(bandwidth=836280, program_id=1, codecs="mp4a.40.2,avc1.64001f",
+                                        name=preview.template_name,
+                                        resolution=f"{preview.template_width}x{preview.template_height}")
+            elif preview.template_id == 'HD':
+                stream_inf = StreamInfo(bandwidth=2149280, program_id=1, codecs="mp4a.40.2,avc1.64001f",
+                                        name=preview.template_name,
+                                        resolution=f"{preview.template_width}x{preview.template_height}")
+            elif preview.template_id == 'FHD':
+                stream_inf = StreamInfo(bandwidth=6221600, program_id=1, codecs="mp4a.40.2,avc1.640028",
+                                        name=preview.template_name,
+                                        resolution=f"{preview.template_width}x{preview.template_height}")
+            else:
+                stream_inf = StreamInfo(bandwidth=460560, program_id=1, codecs="mp4a.40.5,avc1.420016",
+                                        name=preview.template_name,
+                                        resolution=f"{preview.template_width}x{preview.template_height}")
+
+            start_str += '\n#EXT-X-STREAM-INF:' + str(stream_inf) + '\n' + preview.url
+    return start_str
 
 
 def get_now_time():
@@ -41,34 +104,25 @@ def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
             return Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
 
 
-def get_video_preview(file_obj: FileInfo, template_id='FHD|HD|SD|LD'):
-    if not file_obj:
-        return {}
+def get_video_m3u8(file_obj: FileInfo, template_id='FHD|HD|SD|LD'):
     drive_obj = AliyunDrive.objects.filter(active=True, enable=True, access_token__isnull=False,
                                            pk=file_obj.aliyun_drive_id.pk).first()
     if drive_obj:
         ali_obj: Aligo = get_aliyun_drive(drive_obj)
         result = ali_obj.get_video_preview_play_info(file_id=file_obj.file_id, drive_id=file_obj.drive_id,
                                                      template_id=template_id)
-        data = {
-            'drive_id': result.drive_id,
-            'file_id': result.file_id,
-            'video_preview_play_info': {
-                'meta': {
-                    'duration': result.video_preview_play_info.meta.duration,
-                    'width': result.video_preview_play_info.meta.width,
-                    'height': result.video_preview_play_info.meta.height,
-                    'live_transcoding_meta': result.video_preview_play_info.meta.live_transcoding_meta.__dict__
-                },
-                'live_transcoding_task_list': [live.__dict__ for live in
-                                               result.video_preview_play_info.live_transcoding_task_list]
-            }
-        }
-        logger.info(f'get {file_obj} video {data}')
-        for live in result.video_preview_play_info.live_transcoding_task_list[::-1]:
-            if live.status == 'finished':
-                logger.info(f'get {file_obj} video preview url {live.url}')
-                return live.url
+        return format_m3u8_data(result.video_preview_play_info.live_transcoding_task_list)
+
+
+def make_m3u8_token(file_obj):
+    return make_token(key=file_obj.file_id, time_limit=20, force_new=True, prefix='m3u8')
+
+
+def get_video_preview(file_obj: FileInfo):
+    if not file_obj:
+        return {}
+    token = make_m3u8_token(file_obj)
+    return f'https://app.hehelucky.cn{reverse("m3u8", kwargs={"file_id": file_obj.file_id})}?token={token}'
 
 
 def get_download_url(file_obj: FileInfo, download=False) -> dict:

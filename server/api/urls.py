@@ -17,7 +17,7 @@ from django.urls import include, re_path
 from rest_framework.routers import SimpleRouter
 
 from api.views.alidrive import AliyunDriveView, AliyunDriveQRView
-from api.views.download import DownloadView
+from api.views.download import DownloadView, M3U8View
 from api.views.files import FileInfoView, ManyView, VideoPreviewView
 from api.views.lobby import FileLobbyView
 from api.views.share import ShareCodeView
@@ -41,6 +41,7 @@ urlpatterns = [
     re_path('short', ShortView.as_view(), name='short'),
     re_path('lobby', FileLobbyView.as_view(), name='lobby'),
     re_path(r'^many/(?P<name>\w+)$', ManyView.as_view(), name='many'),
+    re_path(r'^m3u8/(?P<file_id>\w+)$', M3U8View.as_view(), name='m3u8'),
     re_path('preview', VideoPreviewView.as_view(), name='preview'),
     re_path('refresh', RefreshTokenView.as_view(), name='refresh'),
     re_path('', include(router.urls))
