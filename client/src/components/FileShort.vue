@@ -125,6 +125,7 @@ export default {
       getFileUrl({auth_infos: [{file_id: row.file_id, token: row.token, act: 'preview'}]}).then(res => {
         if (res.code === 1000) {
           this.videoSrc = res.data.preview_url
+          this.videoTitle = row.name
           this.videoVisible = true
         }
       })

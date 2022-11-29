@@ -23,7 +23,7 @@ export default {
         color: "#409eff", //主题色
         title: "", //视频名称
         type: "m3u8",
-        src: "",
+        // src: "",
         muted: false, //静音
         webFullScreen: false,
         speedRate: ["0.75", "1.0", "1.25", "1.5", "2.0"], //播放倍速
