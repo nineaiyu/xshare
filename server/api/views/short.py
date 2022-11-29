@@ -18,7 +18,7 @@ from django.utils import timezone
 from rest_framework.views import APIView
 
 from api.models import ShareCode, FileInfo
-from api.utils.model import get_download_url, batch_get_download_url
+from api.utils.model import get_download_url, batch_get_download_url, get_video_preview
 from api.utils.serializer import ShortSerializer
 from common.base.magic import cache_response
 from common.core.response import ApiResponse
@@ -60,14 +60,18 @@ class ShortView(APIView):
             if len(auth_infos) == 1:
                 download_token = auth_infos[0].get('token')
                 file_id = auth_infos[0].get('file_id')
-
+                act = auth_infos[0].get('act')
                 if download_token and file_id and verify_token(download_token, file_id, success_once=False):
                     file_obj = FileInfo.objects.filter(file_id=file_id).first()
-                    download_url = get_download_url(file_obj)
-                    if download_url:
-                        file_obj.downloads += 1
-                        file_obj.save(update_fields=['downloads'])
-                        return ApiResponse(data=[download_url])
+                    if file_obj:
+                        if act and act == 'preview':
+                            return ApiResponse(data={'preview_url': get_video_preview(file_obj)})
+                        else:
+                            download_url = get_download_url(file_obj)
+                            if download_url:
+                                file_obj.downloads += 1
+                                file_obj.save(update_fields=['downloads'])
+                                return ApiResponse(data=[download_url])
             else:
                 verify_file_id_list = []
                 for auth_info in auth_infos:

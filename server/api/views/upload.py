@@ -38,7 +38,7 @@ def check_sid(request, sid):
 
 def save_file_info(complete, request, drive_obj):
     fields = ['name', 'file_id', 'drive_id', 'created_at', 'size', 'content_type', 'content_hash',
-              'crc64_hash']
+              'crc64_hash', 'category']
 
     defaults = {}
     for f in fields:

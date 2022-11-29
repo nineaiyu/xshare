@@ -6,6 +6,7 @@ from .Drive import Drive
 from .File import File
 from .Recyclebin import Recyclebin
 from .User import User
+from .Video import Video
 
 
 class Core(
@@ -14,6 +15,7 @@ class Core(
     Drive,
     User,
     File,
-    Recyclebin
+    Recyclebin,
+    Video
 ):
     """..."""

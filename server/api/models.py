@@ -47,6 +47,7 @@ class FileInfo(models.Model):
     created_at = models.DateTimeField(verbose_name="上传时间", auto_now_add=True)
     size = models.BigIntegerField(verbose_name="文件大小")
     content_type = models.CharField(max_length=64, verbose_name="文件类型")
+    category = models.CharField(max_length=64, verbose_name="类别")
     content_hash = models.CharField(max_length=64, verbose_name="content_hash")
     crc64_hash = models.CharField(max_length=64, verbose_name="crc64_hash")
 

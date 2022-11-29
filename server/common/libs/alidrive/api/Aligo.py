@@ -7,13 +7,15 @@ from .Create import Create
 from .Download import Download
 from .File import File
 from .Recyclebin import Recyclebin
+from .Video import Video
 
 
 class Aligo(
     Create,
     Download,
     File,
-    Recyclebin
+    Recyclebin,
+    Video
 ):
     """阿里云盘"""
 

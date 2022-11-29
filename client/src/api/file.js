@@ -46,3 +46,11 @@ export function getDownloadUrl(id) {
         method: 'get',
     })
 }
+
+export function getVideoPreviewUrl(file_id) {
+    return request({
+        url: '/preview/',
+        method: 'post',
+        data: {file_id}
+    })
+}

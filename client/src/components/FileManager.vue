@@ -1,5 +1,5 @@
 <template>
-
+  <preview-video v-model:video-visible="videoVisible" :video-src="videoSrc" :video-title="videoTitle"></preview-video>
   <share-file v-model:file-id-list="fileIdList" v-model:share-visible="shareVisible"/>
   <div class="filter-container">
     <el-input v-model="listQuery.name" class="filter-item" clearable placeholder="文件名称" style="width: 140px;"
@@ -34,7 +34,20 @@
       @selection-change="handleSelectionChange"
   >
     <el-table-column align="center" type="selection" width="55"/>
-    <el-table-column align="center" label="文件名" prop="name"/>
+    <el-table-column align="center" label="文件名" prop="name">
+      <template #default="scope">
+        <el-tooltip
+            v-if="scope.row.category==='video'"
+            content="点击播放视频"
+            placement="top-start"
+        >
+          <el-link :underline="false" @click="preview(scope.row.file_id)">{{ scope.row.name }}</el-link>
+        </el-tooltip>
+        <span v-else>
+          {{ scope.row.name }}
+        </span>
+      </template>
+    </el-table-column>
     <el-table-column :formatter="sizeFormatter" align="center" label="文件大小" prop="size" width="90"/>
     <el-table-column :formatter="timeFormatter" align="center" label="上传时间" prop="created_at"/>
     <el-table-column align="center" label="下载次数" prop="downloads" width="100"/>
@@ -89,11 +102,20 @@
 </template>
 
 <script>
-import {delFile, delManyFile, downloadManyFile, getDownloadUrl, getFile, updateFile} from "@/api/file";
+import {
+  delFile,
+  delManyFile,
+  downloadManyFile,
+  getDownloadUrl,
+  getFile,
+  getVideoPreviewUrl,
+  updateFile
+} from "@/api/file";
 import {diskSize, downloadFile, formatTime, getLocationOrigin} from "@/utils";
 import {ElMessage, ElMessageBox} from "element-plus";
 import Pagination from "@/components/base/Pagination";
 import ShareFile from "@/components/base/ShareFile";
+import PreviewVideo from "@/components/base/PreviewVideo";
 
 const sortOptions = [
   {label: '上传时间 Ascending', key: 'created_at'},
@@ -106,11 +128,15 @@ const sortOptions = [
 export default {
   name: "FileManager",
   components: {
+    PreviewVideo,
     ShareFile,
-    Pagination
+    Pagination,
   },
   data() {
     return {
+      videoVisible: false,
+      videoTitle: '',
+      videoSrc: '',
       isLoading: false,
       shareVisible: false,
       tableData: [],
@@ -128,6 +154,15 @@ export default {
       fileIdList: []
     }
   }, methods: {
+    preview(file_id) {
+      getVideoPreviewUrl(file_id).then(res => {
+        this.videoSrc = res.data.preview_url
+        this.videoTitle = res.data.name
+        this.videoVisible = true
+      }).catch(err => {
+        ElMessage.warning("获取链接失败" + err)
+      })
+    },
     shareFile(row) {
       this.selectedData = [row]
       this.showShareDialog()

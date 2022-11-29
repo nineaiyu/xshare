@@ -11,7 +11,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.views import APIView
 
 from api.models import FileInfo, ShareCode
-from api.utils.model import get_aliyun_drive, batch_get_download_url, batch_delete_file
+from api.utils.model import get_aliyun_drive, batch_get_download_url, batch_delete_file, get_video_preview
 from api.utils.serializer import FileInfoSerializer
 from common.cache.storage import DownloadUrlCache
 from common.core.filter import OwnerUserFilter
@@ -52,6 +52,19 @@ class FileInfoView(BaseModelSet):
 
     def create(self, request, *args, **kwargs):
         return ApiResponse(code=1001, msg='添加失败')
+
+
+class VideoPreviewView(APIView):
+    def post(self, request):
+        file_id = request.data.get('file_id')
+        if file_id:
+            instance = FileInfo.objects.filter(owner_id=request.user, file_id=file_id, category='video').first()
+            if instance:
+                serializer = FileInfoSerializer(instance)
+                data = serializer.data
+                data['preview_url'] = get_video_preview(instance)
+                return ApiResponse(data=data)
+        return ApiResponse(code=1001, msg='操作失败')
 
 
 class ManyView(APIView):

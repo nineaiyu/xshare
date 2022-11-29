@@ -1,5 +1,6 @@
 <template>
   <el-container style="max-width: 880px;text-align: center;margin: 0 auto">
+    <preview-video v-model:video-visible="videoVisible" :video-src="videoSrc" :video-title="videoTitle"></preview-video>
     <el-main>
       <el-row style="height: 200px;margin-bottom: 20px">
         <el-col :span="8">
@@ -67,7 +68,16 @@
           <el-table-column type="index"/>
           <el-table-column align="center" label="文件名" prop="name">
             <template #default="scope">
-              <el-link :underline="false">{{ scope.row.name }}</el-link>
+              <el-tooltip
+                  v-if="scope.row.category==='video'"
+                  content="点击播放视频"
+                  placement="top-start"
+              >
+                <el-link :underline="false" @click="preview(scope.row)">{{ scope.row.name }}</el-link>
+              </el-tooltip>
+              <span v-else>
+          {{ scope.row.name }}
+        </span>
             </template>
           </el-table-column>
           <el-table-column :formatter="sizeFormatter" align="center" label="文件大小" prop="size" width="90"/>
@@ -89,6 +99,7 @@
 <script>
 import {getFileShare, getFileUrl} from "@/api/short";
 import {createBase64, diskSize, downloadFile, formatTime} from "@/utils";
+import PreviewVideo from "@/components/base/PreviewVideo";
 
 export default {
   name: "FileDownload",
@@ -99,11 +110,25 @@ export default {
       shareInfo: {
         file_info_list: []
       },
-        first_name: ''
+      first_name: '',
+      videoSrc: '',
+      videoTitle: '',
+      videoVisible: false
     }
+  },
+  components: {
+    PreviewVideo
   },
   methods: {
     createBase64,
+    preview(row) {
+      getFileUrl({auth_infos: [{file_id: row.file_id, token: row.token, act: 'preview'}]}).then(res => {
+        if (res.code === 1000) {
+          this.videoSrc = res.data.preview_url
+          this.videoVisible = true
+        }
+      })
+    },
     makeDownloadAuth(rows) {
       let auth = []
       rows.forEach(res => {

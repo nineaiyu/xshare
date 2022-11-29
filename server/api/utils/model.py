@@ -41,6 +41,36 @@ def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
             return Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
 
 
+def get_video_preview(file_obj: FileInfo, template_id='FHD|HD|SD|LD'):
+    if not file_obj:
+        return {}
+    drive_obj = AliyunDrive.objects.filter(active=True, enable=True, access_token__isnull=False,
+                                           pk=file_obj.aliyun_drive_id.pk).first()
+    if drive_obj:
+        ali_obj: Aligo = get_aliyun_drive(drive_obj)
+        result = ali_obj.get_video_preview_play_info(file_id=file_obj.file_id, drive_id=file_obj.drive_id,
+                                                     template_id=template_id)
+        data = {
+            'drive_id': result.drive_id,
+            'file_id': result.file_id,
+            'video_preview_play_info': {
+                'meta': {
+                    'duration': result.video_preview_play_info.meta.duration,
+                    'width': result.video_preview_play_info.meta.width,
+                    'height': result.video_preview_play_info.meta.height,
+                    'live_transcoding_meta': result.video_preview_play_info.meta.live_transcoding_meta.__dict__
+                },
+                'live_transcoding_task_list': [live.__dict__ for live in
+                                               result.video_preview_play_info.live_transcoding_task_list]
+            }
+        }
+        logger.info(f'get {file_obj} video {data}')
+        for live in result.video_preview_play_info.live_transcoding_task_list[::-1]:
+            if live.status == 'finished':
+                logger.info(f'get {file_obj} video preview url {live.url}')
+                return live.url
+
+
 def get_download_url(file_obj: FileInfo, download=False) -> dict:
     if not file_obj:
         return {}

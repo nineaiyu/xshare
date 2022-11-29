@@ -15,5 +15,7 @@ from .GetFileListRequest import GetFileListRequest
 from .GetFileRequest import GetFileRequest
 from .GetRecycleBinListRequest import GetRecycleBinListRequest
 from .GetUploadUrlRequest import GetUploadUrlRequest
+from .GetVideoPlayInfoRequest import GetVideoPlayInfoRequest
+from .GetVideoPreviewPlayInfoRequest import GetVideoPreviewPlayInfoRequest
 from .MoveFileToTrashRequest import MoveFileToTrashRequest
 from .RestoreFileRequest import RestoreFileRequest

@@ -7,3 +7,4 @@ from .Core import Core
 from .Create import Create
 from .File import File
 from .Recyclebin import Recyclebin
+from .Video import Video

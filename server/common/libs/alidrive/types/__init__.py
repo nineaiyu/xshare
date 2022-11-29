@@ -14,3 +14,5 @@ from .RateLimit import RateLimit
 from .Token import Token
 from .UploadPartInfo import UploadPartInfo
 from .UserConfig import UserConfig
+from .VideoPreviewPlayInfo import VideoPreviewPlayInfo
+from .VideoTranscodeTemplate import VideoTranscodeTemplate
