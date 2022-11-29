@@ -111,7 +111,7 @@ def get_video_m3u8(file_obj: FileInfo, template_id='FHD|HD|SD|LD'):
         ali_obj: Aligo = get_aliyun_drive(drive_obj)
         result = ali_obj.get_video_preview_play_info(file_id=file_obj.file_id, drive_id=file_obj.drive_id,
                                                      template_id=template_id)
-        return format_m3u8_data(result.video_preview_play_info.live_transcoding_task_list)
+        return format_m3u8_data(result.video_preview_play_info.live_transcoding_task_list[::-1])
 
 
 def make_m3u8_token(file_obj):
