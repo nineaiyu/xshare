@@ -80,8 +80,11 @@ class ShareCodeView(BaseModelSet):
                         expired_time = None
                 share_info['expired_time'] = expired_time
                 if len(file_id_list_obj) == 1:
+                    file_description = file_id_list_obj.first().description
+                    if not file_description:
+                        file_description = file_id_list_obj.first().name
                     share_info['description'] = share_info['description'] if share_info[
-                        'description'] else file_id_list_obj.first().name
+                        'description'] else file_description
                 share_code_obj = ShareCode.objects.create(**share_info)
                 share_code_obj.file_id.add(*file_id_list_obj)
                 delay_refresh_lobby_cache()
