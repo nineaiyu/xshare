@@ -16,6 +16,7 @@
       <el-menu-item index="uploads">上传文件</el-menu-item>
       <el-menu-item index="files">文件管理</el-menu-item>
       <el-menu-item index="drive">云盘管理</el-menu-item>
+      <el-menu-item index="github">Github</el-menu-item>
       <div class="flex-grow"/>
 
       <el-sub-menu index="6">
@@ -69,7 +70,11 @@ export default {
       return this.userinfo.username
     },
     handleSelect(key) {
-      this.$router.push({name: key})
+      if (key === 'github') {
+        window.open('https://github.com/nineaiyu/xshare', '_blank', '');
+      } else {
+        this.$router.push({name: key})
+      }
     },
     logout() {
       const refresh = getRefreshToken()

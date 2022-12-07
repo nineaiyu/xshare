@@ -79,6 +79,9 @@ class ShareCodeView(BaseModelSet):
                         logger.warning(f'format expired_time {expired_time} failed.{e}')
                         expired_time = None
                 share_info['expired_time'] = expired_time
+                if len(file_id_list_obj) == 1:
+                    share_info['description'] = share_info['description'] if share_info[
+                        'description'] else file_id_list_obj.first().name
                 share_code_obj = ShareCode.objects.create(**share_info)
                 share_code_obj.file_id.add(*file_id_list_obj)
                 delay_refresh_lobby_cache()

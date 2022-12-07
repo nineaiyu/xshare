@@ -147,7 +147,7 @@ class LobbyShareSerializer(ShareCodeSerializer):
 class LobbyFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FileInfo
-        fields = ['name', 'created_at', 'size', 'downloads', 'description', 'file_id', 'token']
+        fields = ['name', 'created_at', 'size', 'downloads', 'description', 'file_id', 'token', 'category']
 
     token = serializers.SerializerMethodField()
 

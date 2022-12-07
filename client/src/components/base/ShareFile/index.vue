@@ -129,7 +129,7 @@ export default {
           title: '分享成功',
           type:'success',
           dangerouslyUseHTMLString: true,
-          message: `分享链接地址： <strong><a href="${this.makeShortUrl(res.data.short)}?password=${res.data.password}">${this.makeShortUrl(res.data.short)}?password=${res.data.password}</a></strong>`,
+          message: `分享链接地址：<br/> <strong><a href="${this.makeShortUrl(res.data.short)}?password=${res.data.password}">${this.makeShortUrl(res.data.short)}?password=${res.data.password}</a></strong>`,
           duration:8000
         })
         this.showVisible = false

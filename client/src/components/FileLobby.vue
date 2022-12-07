@@ -1,4 +1,5 @@
 <template>
+  <preview-video v-model:video-visible="videoVisible" :video-src="videoSrc" :video-title="videoTitle"></preview-video>
   <el-row style="text-align: center;">
     <el-col :span="11">
       <el-card shadow="hover">
@@ -64,6 +65,9 @@
                 <el-form-item label="下载连接：">
                   <el-link :underline="false" @click="downloadFile(file)">点击下载</el-link>
                 </el-form-item>
+                <el-form-item v-if="file.category==='video'" label="播放视频：">
+                  <el-link :underline="false" @click="preview(file)">点击播放</el-link>
+                </el-form-item>
                 <el-form-item label="下载次数：">
                   <el-tag type="success">{{ file.downloads }}</el-tag>
                 </el-form-item>
@@ -101,12 +105,14 @@ export default {
   name: "FileLobby",
   components: {},
   data() {
-
     return {
       share_data: [],
       file_data: [],
       show: true,
-      loading: false
+      loading: false,
+      videoSrc: '',
+      videoTitle: '',
+      videoVisible: false
     }
   },
   mounted() {
@@ -114,6 +120,15 @@ export default {
   },
   methods: {
     diskSize,
+    preview(row) {
+      getFileUrl({auth_infos: [{file_id: row.file_id, token: row.token, act: 'preview'}]}).then(res => {
+        if (res.code === 1000) {
+          this.videoSrc = res.data.preview_url
+          this.videoTitle = row.name
+          this.videoVisible = true
+        }
+      })
+    },
     initData() {
       this.loading = true
       getLobby().then(res => {
