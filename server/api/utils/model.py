@@ -139,7 +139,6 @@ def get_video_preview(file_obj: FileInfo):
     if not check_file_punish(file_obj):
         return ""
     token = make_m3u8_token(file_obj)
-    return f'https://app.hehelucky.cn{reverse("m3u8", kwargs={"file_id": file_obj.file_id})}?token={token}'
     return f'{reverse("m3u8", kwargs={"file_id": file_obj.file_id})}?token={token}'
 
 
