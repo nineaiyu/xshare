@@ -100,6 +100,7 @@
 import {getLobby} from "@/api/lobby";
 import {diskSize, downloadFile} from "@/utils";
 import {getFileUrl} from "@/api/short";
+import {ElMessage} from "element-plus";
 
 export default {
   name: "FileLobby",
@@ -123,6 +124,10 @@ export default {
     preview(row) {
       getFileUrl({auth_infos: [{file_id: row.file_id, token: row.token, act: 'preview'}]}).then(res => {
         if (res.code === 1000) {
+          if (res.data.preview_url === "") {
+            ElMessage.error("文件违规")
+            return
+          }
           this.videoSrc = res.data.preview_url
           this.videoTitle = row.name
           this.videoVisible = true

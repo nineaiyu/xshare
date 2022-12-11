@@ -94,6 +94,17 @@ def cache_time(*args, **kwargs):
     return 1
 
 
+@MagicCacheData.make_cache(timeout=24 * 60 * 60, key_func=lambda *args: args[0].file_id)
+def check_file_punish(file_obj: FileInfo):
+    drive_obj = AliyunDrive.objects.filter(active=True, enable=True, access_token__isnull=False,
+                                           pk=file_obj.aliyun_drive_id.pk).first()
+    if drive_obj:
+        ali_obj: Aligo = get_aliyun_drive(drive_obj)
+        result = ali_obj.get_file(file_obj.file_id, drive_id=file_obj.drive_id)
+        return result.punish_flag == 0
+    return False
+
+
 @MagicCacheData.make_cache(timeout=5, key_func=lambda *args: args[0].user_id, timeout_func=cache_time)
 def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
     drive_obj = AliyunDrive.objects.filter(pk=drive_obj.pk, active=True).first()
@@ -111,7 +122,11 @@ def get_video_m3u8(file_obj: FileInfo, template_id='FHD|HD|SD|LD'):
         ali_obj: Aligo = get_aliyun_drive(drive_obj)
         result = ali_obj.get_video_preview_play_info(file_id=file_obj.file_id, drive_id=file_obj.drive_id,
                                                      template_id=template_id)
-        return format_m3u8_data(result.video_preview_play_info.live_transcoding_task_list[::-1])
+        try:
+            return format_m3u8_data(result.video_preview_play_info.live_transcoding_task_list[::-1])
+        except Exception:
+            logger.warning(result)
+            return None
 
 
 def make_m3u8_token(file_obj):
@@ -120,8 +135,11 @@ def make_m3u8_token(file_obj):
 
 def get_video_preview(file_obj: FileInfo):
     if not file_obj:
-        return {}
+        return ""
+    if not check_file_punish(file_obj):
+        return ""
     token = make_m3u8_token(file_obj)
+    return f'https://app.hehelucky.cn{reverse("m3u8", kwargs={"file_id": file_obj.file_id})}?token={token}'
     return f'{reverse("m3u8", kwargs={"file_id": file_obj.file_id})}?token={token}'
 
 

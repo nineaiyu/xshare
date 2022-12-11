@@ -156,9 +156,15 @@ export default {
   }, methods: {
     preview(file_id) {
       getVideoPreviewUrl(file_id).then(res => {
-        this.videoSrc = res.data.preview_url
-        this.videoTitle = res.data.name
-        this.videoVisible = true
+        if (res.code === 1000) {
+          if (res.data.preview_url === "") {
+            ElMessage.error("文件违规")
+            return
+          }
+          this.videoSrc = res.data.preview_url
+          this.videoTitle = res.data.name
+          this.videoVisible = true
+        }
       }).catch(err => {
         ElMessage.warning("获取链接失败" + err)
       })

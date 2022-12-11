@@ -36,7 +36,7 @@ class DownloadView(ReadOnlyModelViewSet):
             instance.downloads += 1
             instance.save(update_fields=['downloads'])
             return ApiResponse(data=download_url)
-        return ApiResponse(code=1001, msg='云盘不可用')
+        return ApiResponse(code=1001, msg='文件违规')
 
     def list(self, request, *args, **kwargs):
         return ApiResponse(code=1001, msg='获取失败')
