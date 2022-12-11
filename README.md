@@ -1,8 +1,9 @@
 # xshare
 ###### 基于阿里云盘的文件分享平台
 
+
 部署环境系统使用centos8stream
-### 1.docker 部署
+### 1.docker 部署 [建议]
 
 ##### 从git上面下载源码
 ```
@@ -203,3 +204,11 @@ cd docker/nginx
 docker-compse down
 docker-compose up -d
 ```
+****
+[Demo访问](https://xshare.heheshow.cn/)
+
+功能预览：
+![img.png](images/img.png)
+![img_2.png](images/img_2.png)
+![img_1.png](images/img_1.png)
+![img_3.png](images/img_3.png)
