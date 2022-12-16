@@ -101,7 +101,7 @@ def check_file_punish(file_obj: FileInfo):
     if drive_obj:
         ali_obj: Aligo = get_aliyun_drive(drive_obj)
         result = ali_obj.get_file(file_obj.file_id, drive_id=file_obj.drive_id)
-        return result.punish_flag == 0
+        return result.punish_flag != 2 
     return False
 
 
