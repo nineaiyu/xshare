@@ -101,7 +101,7 @@ def check_file_punish(file_obj: FileInfo):
     if drive_obj:
         ali_obj: Aligo = get_aliyun_drive(drive_obj)
         result = ali_obj.get_file(file_obj.file_id, drive_id=file_obj.drive_id)
-        return result.punish_flag != 2 
+        return result.punish_flag != 2
     return False
 
 
@@ -115,13 +115,13 @@ def get_aliyun_drive(drive_obj: AliyunDrive) -> Aligo:
             return Aligo(drive_obj, refresh_token=drive_obj.refresh_token)
 
 
-def get_video_m3u8(file_obj: FileInfo, template_id='FHD|HD|SD|LD'):
+def get_video_m3u8(file_obj: FileInfo, template_id='FHD|HD|SD|LD', url_expire_sec=14400):
     drive_obj = AliyunDrive.objects.filter(active=True, enable=True, access_token__isnull=False,
                                            pk=file_obj.aliyun_drive_id.pk).first()
     if drive_obj:
         ali_obj: Aligo = get_aliyun_drive(drive_obj)
         result = ali_obj.get_video_preview_play_info(file_id=file_obj.file_id, drive_id=file_obj.drive_id,
-                                                     template_id=template_id)
+                                                     template_id=template_id, url_expire_sec=url_expire_sec)
         try:
             return format_m3u8_data(result.video_preview_play_info.live_transcoding_task_list[::-1])
         except Exception:
