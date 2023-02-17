@@ -64,3 +64,5 @@ class BaseFile(DataClass):
     sync_device_flag: bool = field(default=None, repr=False)
     sync_meta: str = field(default=None, repr=False)
     ex_fields_info: FieldsInfo = field(default=None, repr=False)
+    from_share_id: str = None
+    revision_version: int = None

@@ -1,8 +1,10 @@
 """认证模块"""
 import base64
+import datetime
 import json
 import logging
 import time
+import uuid
 from typing import Dict, Optional
 
 import coloredlogs
@@ -16,7 +18,7 @@ from common.libs.alidrive.types import Token, DataClass
 
 def get_token_from_db(drive_obj):
     fields = ['user_name', 'nick_name', 'user_id', 'default_drive_id', 'default_sbox_drive_id', 'access_token',
-              'refresh_token', 'avatar', 'expire_time']
+              'refresh_token', 'avatar', 'expire_time', 'x_device_id']
     for f in fields:
         setattr(Token, f, getattr(drive_obj, f))
     return Token
@@ -24,7 +26,7 @@ def get_token_from_db(drive_obj):
 
 def save_token_to_db(drive_obj, token):
     fields = ['user_name', 'nick_name', 'user_id', 'default_drive_id', 'default_sbox_drive_id', 'access_token',
-              'refresh_token', 'avatar', 'expire_time']
+              'refresh_token', 'avatar', 'expire_time', 'x_device_id']
     defaults = {'owner_id': drive_obj.owner_id}
     for f in fields:
         defaults[f] = getattr(token, f)
@@ -40,6 +42,9 @@ class Auth(object):
 
     _SLEEP_TIME_SEC = None
     _SHARE_PWD_DICT = {}
+    # x-headers
+    _X_PUBLIC_KEY = '04d9d2319e0480c840efeeb75751b86d0db0c5b9e72c6260a1d846958adceaf9dee789cab7472741d23aafc1a9c591f72e7ee77578656e6c8588098dea1488ac2a'
+    _X_SIGNATURE = 'f4b7bed5d8524a04051bd2da876dd79afe922b8205226d65855d02b267422adb1e0d8a816b021eaf5c36d101892180f79df655c5712b348c2a540ca136e6b22001'
 
     def debug_log(self, response: requests.Response):
         """打印错误日志, 便于分析调试"""
@@ -81,17 +86,7 @@ class Auth(object):
         self.session.proxies = proxies
         self.session.headers.update(UNI_HEADERS)
 
-        self.session.get(AUTH_HOST + V2_OAUTH_AUTHORIZE, params={
-            'login_type': 'custom',
-            'response_type': 'code',
-            'redirect_uri': 'https://www.aliyundrive.com/sign/callback',
-            'client_id': CLIENT_ID,
-            'state': r'{"origin":"file://"}',
-        }, stream=True).close()
-
-        #
-        sessionid = self.session.cookies.get('SESSIONID')
-        self.log.debug(f'session {sessionid}')
+        self._x_device_id = drive_obj.x_device_id
 
         #
         self.token: Optional[Token] = Token()
@@ -103,15 +98,54 @@ class Auth(object):
             return
 
         self.token = get_token_from_db(self.drive_obj)
+        self.session.headers.update({
+            'Authorization': self.token.access_token,
+        })
+        self._init_x_headers()
         self.log.debug('登录方式 database access_token')
         self.session.headers.update({
             'Authorization': self.token.access_token
         })
+    def _create_session(self):
+        self.post(USERS_V1_USERS_DEVICE_CREATE_SESSION, body={
+            'deviceName': f'xshare - {self.drive_obj}',
+            'modelName': "Windows 操作系统",
+            'pubKey': self._X_PUBLIC_KEY,
+        })
+
+    def _renew_session(self):
+        self.post(USERS_V1_USERS_DEVICE_CREATE_SESSION, body={})
+
+    def _init_x_headers(self):
+        if not self._x_device_id:
+            # 如果 self._x_device_id 为 None，尝试从 token 中获取（来自文件）
+            self._x_device_id = self.token.x_device_id
+        if not self._x_device_id:
+            # 如果文件中未存储，则说明还没有，则生成
+            self._x_device_id = uuid.uuid4().hex
+        # 设置 x-headers
+        self.session.headers.update({
+            'x-device-id': self._x_device_id,
+            'x-signature': self._X_SIGNATURE
+        })
+        # 将 x-headers 放到 token 对象中，用以保存
+        self.token.x_device_id = self._x_device_id
 
     def _save(self):
         self.drive_obj = save_token_to_db(self.drive_obj, self.token)
 
     def get_login_qr(self) -> dict:
+        self.session.get(AUTH_HOST + V2_OAUTH_AUTHORIZE, params={
+            'login_type': 'custom',
+            'response_type': 'code',
+            'redirect_uri': 'https://www.aliyundrive.com/sign/callback',
+            'client_id': CLIENT_ID,
+            'state': r'{"origin":"file://"}',
+        }, stream=True).close()
+
+        #
+        session_id = self.session.cookies.get('SESSIONID')
+        self.log.debug(f'session {session_id}')
         response = self.session.get(
             PASSPORT_HOST + NEWLOGIN_QRCODE_GENERATE_DO, params=UNI_PARAMS
         )
@@ -173,6 +207,7 @@ class Auth(object):
             self.log.info('刷新 token 成功')
             # noinspection PyProtectedMember
             self.token = DataClass.fill_attrs(Token, response.json())
+            self._init_x_headers()
             self._save()
         else:
             self.log.warning(f'刷新 token 失败, {response}')
@@ -208,12 +243,10 @@ class Auth(object):
             self._log_response(response)
 
             if status_code == 401:
-                if 'ShareLinkToken' not in response.text:
-                    self._refresh_token()
-                else:
+                if b'"ShareLinkTokenInvalid"' in response.content:
                     # 刷新 share_token
                     share_id = body['share_id']
-                    share_pwd = self._SHARE_PWD_DICT[share_id]
+                    share_pwd = body['share_pwd']
                     r = self.post(
                         V2_SHARE_LINK_GET_SHARE_TOKEN,
                         body={
@@ -223,22 +256,42 @@ class Auth(object):
                     )
                     share_token = r.json()['share_token']
                     headers['x-share-token'].share_token = share_token
-                time.sleep(1)
+                elif b'"UserDeviceOffline"' in response.content:
+                    self._create_session()
+                else:
+                    self._refresh_token()
                 continue
 
-            if status_code == 429 or status_code == 500:
-                if 'value for name Authorization' in response.text:
-                    self._refresh_token()
-                    time.sleep(1)
-                    continue
-
+            if status_code in [429, 502, 504]:
                 if self._SLEEP_TIME_SEC is None:
                     sleep_int = 5 ** (i % 4)
                 else:
                     sleep_int = self._SLEEP_TIME_SEC
-                self.log.warning(f'被限制了 暂停 {sleep_int} 秒')
+                err_msg = None
+                if status_code == 429:
+                    err_msg = '请求太频繁'
+                elif status_code == 502:
+                    err_msg = '内部网关错误'
+                elif status_code == 504:
+                    err_msg = '内部网关超时'
+                self.log.warning(f'{err_msg}，暂停 {sleep_int} 秒钟')
                 time.sleep(sleep_int)
                 continue
+            if status_code == 400:
+                if b'"DeviceSessionSignatureInvalid"' in response.content:
+                    # 此处逻辑有待观察
+                    if i == 1:
+                        self._renew_session()
+                        continue
+                    elif i == 2:
+                        self._create_session()
+                        continue
+                    else:
+                        raise Exception('renew_session & create_session failed')
+                elif b'"InvalidResource.FileTypeFolder"' in response.content:
+                    self.log.warning('operate failed')
+            if status_code == 500:
+                raise Exception(response.content)
 
             return response
 

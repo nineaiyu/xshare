@@ -32,3 +32,4 @@ class Token(DataClass):
     domain_id: str = field(default=None, repr=False)
     # noinspection SpellCheckingInspection
     hlogin_url: str = field(default=None, repr=False)
+    x_device_id: str = field(default=None, repr=False)

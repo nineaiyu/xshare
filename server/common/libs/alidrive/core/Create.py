@@ -5,6 +5,7 @@ import math
 from dataclasses import asdict
 from typing import Union, List
 
+import requests
 from tqdm import tqdm
 
 from common.cache.storage import UploadPartInfoCache
@@ -135,8 +136,11 @@ class Create(BaseAligo):
             for i in range(len(part_info.part_info_list)):
                 part_info_item = part_info.part_info_list[i]
                 data = f.read(Create.__UPLOAD_CHUNK_SIZE)
-                resp = self._session.put(data=data, url=part_info_item.upload_url)
-                if resp.status_code == 403:
+                try:
+                    resp = self._session.put(data=data, url=part_info_item.upload_url)
+                    if resp.status_code == 403:
+                        raise requests.exceptions.RequestException(f'upload_url({part_info_item.upload_url}) expired')
+                except requests.exceptions.RequestException:
                     part_info = self.get_upload_url(GetUploadUrlRequest(
                         drive_id=part_info.drive_id,
                         file_id=part_info.file_id,
@@ -145,8 +149,8 @@ class Create(BaseAligo):
                     ))
                     part_info_item = part_info.part_info_list[i]
                     resp = self._session.put(data=data, url=part_info_item.upload_url)
-                    if resp.status_code == 403:
-                        raise '这里不对劲，请反馈：https://github.com/foyoux/aligo/issues/new'
+                if resp.status_code == 403:
+                    raise '这里不对劲，请反馈：https://github.com/foyoux/aligo/issues/new'
                 progress_bar.update(len(data))
 
         progress_bar.close()
