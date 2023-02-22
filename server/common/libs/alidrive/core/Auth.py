@@ -1,6 +1,5 @@
 """认证模块"""
 import base64
-import datetime
 import json
 import logging
 import time
@@ -108,13 +107,13 @@ class Auth(object):
         })
     def _create_session(self):
         self.post(USERS_V1_USERS_DEVICE_CREATE_SESSION, body={
-            'deviceName': f'xshare - {self.drive_obj}',
+            'deviceName': f'xshare - {self.drive_obj.nick_name}',
             'modelName': "Windows 操作系统",
             'pubKey': self._X_PUBLIC_KEY,
         })
 
     def _renew_session(self):
-        self.post(USERS_V1_USERS_DEVICE_CREATE_SESSION, body={})
+        self.post(USERS_V1_USERS_DEVICE_RENEW_SESSION, body={})
 
     def _init_x_headers(self):
         if not self._x_device_id:
@@ -279,15 +278,7 @@ class Auth(object):
                 continue
             if status_code == 400:
                 if b'"DeviceSessionSignatureInvalid"' in response.content:
-                    # 此处逻辑有待观察
-                    if i == 1:
-                        self._renew_session()
-                        continue
-                    elif i == 2:
-                        self._create_session()
-                        continue
-                    else:
-                        raise Exception('renew_session & create_session failed')
+                    self._renew_session()
                 elif b'"InvalidResource.FileTypeFolder"' in response.content:
                     self.log.warning('operate failed')
             if status_code == 500:
