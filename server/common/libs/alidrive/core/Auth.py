@@ -278,7 +278,8 @@ class Auth(object):
                 continue
             if status_code == 400:
                 if b'"DeviceSessionSignatureInvalid"' in response.content:
-                    self._renew_session()
+                    self._create_session()
+                    continue
                 elif b'"InvalidResource.FileTypeFolder"' in response.content:
                     self.log.warning('operate failed')
             if status_code == 500:
