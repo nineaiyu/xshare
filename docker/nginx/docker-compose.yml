@@ -23,5 +23,3 @@ services:
         - 443:443
     external_links:
         - xshare:xshare
-    depends_on:
-        - xshare

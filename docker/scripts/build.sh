@@ -3,5 +3,5 @@
 #
 
 cd ../build/
-docker-compose build
-docker-compose up buildclient
+docker compose build
+docker compose up buildclient

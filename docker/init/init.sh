@@ -7,11 +7,6 @@ if [ $? -ne 0 ];then
 	dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 	dnf install docker-ce -y
 fi
-which docker-compose
-if [ $? -ne 0 ];then
-	curl -L https://get.daocloud.io/docker/compose/releases/download/v2.5.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-	chmod +x /usr/local/bin/docker-compose
-fi
 
 data_path="$(dirname $(dirname `pwd`))/data"
 mkdir -pv ${data_path}/{web,mariadb,redis,logs/{mariadb,nginx,xshare}}

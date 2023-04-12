@@ -64,6 +64,8 @@ sh stop_all.sh
 docker exec -it xshare python manage.py createsuperuser
 ```
 
+端口80和443，浏览器输入配置的域名即可访问或者服务器的ip直接访问
+
 ### 2.本地部署
 #### 构建前端页面
 ##### 安装构建环境node,需要nodejs 1.16,centos8默认是1.10，需要重置模块，更换1.16版本
@@ -164,7 +166,7 @@ python manage.py start all -u nginx
 ###### 启动acme容器，用与申请证书和自动续订
 ```shell
 cd docker/acme
-docker-compose up -d
+docker compose up -d
 ```
 需要其他准备好 一个邮箱和域名
 
@@ -201,8 +203,8 @@ vim docker/nginx/nginx.conf.d/xshare.conf
 重新nginx容器
 ```shell
 cd docker/nginx
-docker-compse down
-docker-compose up -d
+docker compose down
+docker compose up -d
 ```
 ****
 [Demo访问](https://xshare.heheshow.cn/)
