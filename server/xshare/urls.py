@@ -18,9 +18,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
 
+from api.views.download import DirectlyDownloadView
 from api.views.flower import CeleryFlowerView
 
 urlpatterns = [
+    re_path(r"^r_download/(?P<file_pk>\w+)/(?P<file_id>\w+)/(?P<file_name>\S+)", DirectlyDownloadView.as_view(),
+            name="r_download"),
     path("admin/", admin.site.urls),
     path("api/v1/", include('api.urls')),
     re_path(r'flower/(?P<path>.*)', CeleryFlowerView.as_view(), name='flower-view'),

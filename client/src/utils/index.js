@@ -1,3 +1,5 @@
+import clip from "@/utils/clipboard";
+
 export function diskSize(num) {
     if (num === 0) return '0 B';
     let k = 1024; //设定基础容量大小
@@ -107,4 +109,8 @@ export function createBase64(str) {
         cans.fillText(str, width / 2, height / 2 + fontsize / 10);
     }
     return can.toDataURL("image/png");
+}
+
+export function copyRDownloadUrl(file_info, event) {
+    clip(`${process.env.base_env.baseUrl}r_download/${file_info.id}/${file_info.file_id}/${file_info.name}`, event)
 }

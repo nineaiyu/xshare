@@ -48,10 +48,11 @@
             <el-table-column :formatter="uptimeFormatter" align="center" label="上传时间" prop="created_at"/>
             <el-table-column align="center" label="下载次数" prop="downloads" width="100"/>
             <el-table-column align="center" label="备注" prop="description"/>
-            <el-table-column align="center" label="操作" width="100">
-              <template #default="scope">
-                <el-button size="small" @click="downloadFile(scope.row.id)">下载文件</el-button>
-              </template>
+            <el-table-column align="center" label="操作" width="130">
+                <template #default="scope">
+                    <el-button size="small" @click="copyRDownloadUrl(scope.row,$event)">复制下载连接</el-button>
+                    <el-button size="small" @click="downloadFile(scope.row.id)">下载文件</el-button>
+                </template>
             </el-table-column>
           </el-table>
         </div>
@@ -204,7 +205,7 @@
 
 <script>
 import clip from '@/utils/clipboard'
-import {diskSize, downloadFile, formatTime, getLocationOrigin} from "@/utils";
+import {copyRDownloadUrl, diskSize, downloadFile, formatTime, getLocationOrigin} from "@/utils";
 import {ElMessage, ElMessageBox} from "element-plus";
 import Pagination from "@/components/base/Pagination";
 import {cleanManyShare, delManyShare, delShare, getShare, updateShare} from "@/api/share";
@@ -243,16 +244,17 @@ export default {
       }
     }
   }, methods: {
-    handleCopy(text, event) {
-      clip(text, event)
-    },
-    makeShortUrl(short) {
-      return getLocationOrigin() + short
-    },
-    formatTime,
-    getShareIdList() {
-      let share_id_list = []
-      this.selectedData.forEach(res => {
+        copyRDownloadUrl,
+        handleCopy(text, event) {
+            clip(text, event)
+        },
+        makeShortUrl(short) {
+            return getLocationOrigin() + short
+        },
+        formatTime,
+        getShareIdList() {
+            let share_id_list = []
+            this.selectedData.forEach(res => {
         share_id_list.push(res.short)
       })
       return share_id_list

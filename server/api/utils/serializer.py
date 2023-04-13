@@ -113,7 +113,7 @@ class ShareCodeSerializer(serializers.ModelSerializer):
 class FileShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FileInfo
-        exclude = ["owner_id", "aliyun_drive_id", "id", "content_type", "crc64_hash"]
+        exclude = ["owner_id", "aliyun_drive_id", "content_type", "crc64_hash"]
 
     token = serializers.SerializerMethodField()
 
@@ -147,7 +147,7 @@ class LobbyShareSerializer(ShareCodeSerializer):
 class LobbyFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FileInfo
-        fields = ['name', 'created_at', 'size', 'downloads', 'description', 'file_id', 'token', 'category']
+        fields = ['id', 'name', 'created_at', 'size', 'downloads', 'description', 'file_id', 'token', 'category']
 
     token = serializers.SerializerMethodField()
 

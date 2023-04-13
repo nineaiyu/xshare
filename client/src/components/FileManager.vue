@@ -85,6 +85,7 @@
     </el-table-column>
     <el-table-column align="center" label="操作">
       <template #default="scope">
+        <el-button size="small" @click="copyRDownloadUrl(scope.row,$event)">复制下载连接</el-button>
         <el-button size="small" @click="shareFile(scope.row)">分享</el-button>
         <el-button size="small" @click="downloadFile(scope.row)">下载文件</el-button>
         <el-button
@@ -103,15 +104,15 @@
 
 <script>
 import {
-  delFile,
-  delManyFile,
-  downloadManyFile,
-  getDownloadUrl,
-  getFile,
-  getVideoPreviewUrl,
-  updateFile
+    delFile,
+    delManyFile,
+    downloadManyFile,
+    getDownloadUrl,
+    getFile,
+    getVideoPreviewUrl,
+    updateFile
 } from "@/api/file";
-import {diskSize, downloadFile, formatTime, getLocationOrigin} from "@/utils";
+import {copyRDownloadUrl, diskSize, downloadFile, formatTime, getLocationOrigin} from "@/utils";
 import {ElMessage, ElMessageBox} from "element-plus";
 import Pagination from "@/components/base/Pagination";
 import ShareFile from "@/components/base/ShareFile";
@@ -154,16 +155,17 @@ export default {
       fileIdList: []
     }
   }, methods: {
-    preview(file_id) {
-      getVideoPreviewUrl(file_id).then(res => {
-        if (res.code === 1000) {
-          if (res.data.preview_url === "") {
-            ElMessage.error("文件违规")
-            return
-          }
-          this.videoSrc = res.data.preview_url
-          this.videoTitle = res.data.name
-          this.videoVisible = true
+        copyRDownloadUrl,
+        preview(file_id) {
+            getVideoPreviewUrl(file_id).then(res => {
+                if (res.code === 1000) {
+                    if (res.data.preview_url === "") {
+                        ElMessage.error("文件违规")
+                        return
+                    }
+                    this.videoSrc = res.data.preview_url
+                    this.videoTitle = res.data.name
+                    this.videoVisible = true
         }
       }).catch(err => {
         ElMessage.warning("获取链接失败" + err)

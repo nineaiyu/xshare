@@ -9,8 +9,9 @@ import logging
 from io import BytesIO
 from wsgiref.util import FileWrapper
 
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.views import View
+from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from api.models import FileInfo
@@ -55,3 +56,19 @@ class M3U8View(View):
                 response['Content-Type'] = "audio/mpegurl"
                 return response
         return ApiResponse(msg='error')
+
+
+class DirectlyDownloadView(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request, file_pk, file_id, file_name):
+        instance = FileInfo.objects.filter(pk=file_pk, file_id=file_id).first()
+        if instance:
+            download_url_dict = get_download_url(instance)
+            logger.warning(download_url_dict)
+            if download_url_dict and download_url_dict.get('download_url'):
+                instance.downloads += 1
+                instance.save(update_fields=['downloads'])
+                return HttpResponseRedirect(redirect_to=download_url_dict.get('download_url'))
+        return HttpResponseNotFound(content="文件不存在")

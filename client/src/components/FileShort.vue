@@ -85,10 +85,11 @@
           <el-table-column :formatter="uptimeFormatter" align="center" label="上传时间" prop="created_at"/>
           <el-table-column align="center" label="下载次数" prop="downloads" width="90"/>
           <el-table-column align="center" label="备注" prop="description"/>
-          <el-table-column align="center" label="操作" width="110">
-            <template #default="scope">
-              <el-button size="small" @click="downloadFile([scope.row])">下载文件</el-button>
-            </template>
+          <el-table-column align="center" label="操作" width="140">
+              <template #default="scope">
+                  <el-button size="small" @click="copyRDownloadUrl(scope.row,$event)">复制下载连接</el-button>
+                  <el-button size="small" @click="downloadFile([scope.row])">下载文件</el-button>
+              </template>
           </el-table-column>
         </el-table>
       </el-card>
@@ -98,7 +99,7 @@
 
 <script>
 import {getFileShare, getFileUrl} from "@/api/short";
-import {createBase64, diskSize, downloadFile, formatTime} from "@/utils";
+import {copyRDownloadUrl, createBase64, diskSize, downloadFile, formatTime} from "@/utils";
 import PreviewVideo from "@/components/base/PreviewVideo";
 import {ElMessage} from "element-plus";
 
@@ -121,16 +122,17 @@ export default {
     PreviewVideo
   },
   methods: {
-    createBase64,
-    preview(row) {
-      getFileUrl({auth_infos: [{file_id: row.file_id, token: row.token, act: 'preview'}]}).then(res => {
-        if (res.code === 1000) {
-          if (res.data.preview_url === "") {
-            ElMessage.error("文件违规")
-            return
-          }
-          this.videoSrc = res.data.preview_url
-          this.videoTitle = row.name
+      copyRDownloadUrl,
+      createBase64,
+      preview(row) {
+          getFileUrl({auth_infos: [{file_id: row.file_id, token: row.token, act: 'preview'}]}).then(res => {
+              if (res.code === 1000) {
+                  if (res.data.preview_url === "") {
+                      ElMessage.error("文件违规")
+                      return
+                  }
+                  this.videoSrc = res.data.preview_url
+                  this.videoTitle = row.name
           this.videoVisible = true
         }
       })
