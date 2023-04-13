@@ -112,5 +112,9 @@ export function createBase64(str) {
 }
 
 export function copyRDownloadUrl(file_info, event) {
-    clip(`${process.env.base_env.baseUrl}r_download/${file_info.id}/${file_info.file_id}/${file_info.name}`, event)
+    let base_url = process.env.base_env.baseUrl
+    if(base_url === "/"){
+         base_url = getLocationOrigin()
+    }
+    clip(`${base_url}r_download/${file_info.id}/${file_info.file_id}/${file_info.name}`, event)
 }
