@@ -117,15 +117,15 @@ async function ChunkedUpload(fileInfo, fileHashInfo, uploadExtra, partInfo, reso
         let res = await fetchProgress(fileInfo, partInfo[index].upload_url, {method: "put", body: chunk}, pr => {
             progress.progress = Math.ceil((pr.loaded + index * chunkSize) * 100 / progress.file_size)
             progress.upload_size = pr.loaded + index * chunkSize
-            progress.percent.push({time: Date.now(), progress: progress.progress})
+            progress.percent.push({time: Date.now(), progress: progress.upload_size})
             if (progress.progress > 0) {
                 let percent = progress.percent;
                 if (percent.length > partNumber) {
                     percent.shift()
-                    progress.speed = diskSize(upSpeed(percent[percent.length - partNumber].time, progress.file_size, progress.progress - percent[percent.length - partNumber].progress))
+                    progress.speed = diskSize(upSpeed(percent[percent.length - partNumber].time, 1, progress.upload_size - percent[percent.length - partNumber].progress))
                 } else {
                     if (percent.length > 1) {
-                        progress.speed = diskSize(upSpeed(percent[0].time, progress.file_size, progress.progress))
+                        progress.speed = diskSize(upSpeed(percent[0].time, 1, progress.upload_size))
                     }
                 }
             }

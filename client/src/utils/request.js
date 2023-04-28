@@ -1,8 +1,9 @@
 import axios from 'axios'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {getAccessToken, getRefreshToken, removeToken, setToken} from '@/utils/auth'
+import {getRefreshToken, removeToken, setToken} from '@/utils/auth'
 import {refreshToken} from "@/api/user";
 import {tokenStore} from "@/store";
+import {getUsedAccessToken} from "@/utils/token";
 
 // create an axios instance
 const service = axios.create({
@@ -14,9 +15,12 @@ const service = axios.create({
 
 // request interceptor
 service.interceptors.request.use(
-    config => {
+    async config => {
         // do something before request is sent
-        config.headers['Authorization'] = 'Bearer ' + getAccessToken()
+        if (config.url === "/refresh") {
+            return config
+        }
+        config.headers['Authorization'] = 'Bearer ' + await getUsedAccessToken()
         return config
     },
     error => {

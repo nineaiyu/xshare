@@ -17,7 +17,7 @@ export function diskSize(num) {
 
 export function upSpeed(start_time, file_size, percent) {
     const now_time = Date.now();
-    return file_size * percent * 10 / (now_time - start_time)
+    return file_size * percent * 1000 / (now_time - start_time)
 }
 
 export function formatTime(time) {

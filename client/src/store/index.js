@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {getAccessToken, getRefreshToken, setToken} from '@/utils/auth'
+import {setToken} from '@/utils/auth'
 import {getUserInfo, login, register} from '@/api/user'
 
 export const userinfoStore = defineStore('userinfo', {
@@ -9,8 +9,6 @@ export const userinfoStore = defineStore('userinfo', {
         email: '',
         last_login: '',
         expired_time: '',
-        token: getAccessToken(),
-        refreshToken: getRefreshToken()
     }),
     actions: {
         async login(userInfo, loginData) {

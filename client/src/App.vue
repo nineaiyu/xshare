@@ -39,7 +39,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   /*margin-top: 60px;*/
-  background-image: linear-gradient(to bottom, #a8edea 0%, #ebecee 100%);
+  background-image: linear-gradient(to bottom, #e8f3ee 0%, #ebecee 100%);
 }
 
 .v_body {

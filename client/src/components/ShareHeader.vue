@@ -104,7 +104,7 @@ export default {
 }
 
 .ly-header {
-  background-image: linear-gradient(to right, #eaebee 0%, #ace0f9 100%);
+    background-image: linear-gradient(to right, #eaebee 0%, #dee6f1 100%);
 }
 
 
