@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from typing import List
 
-from .DataClass import DataClass
+from .Type import DatClass
 from .Privilege import Privilege
 
 
 @dataclass
-class PersonalRightsInfo(DataClass):
+class PersonalRightsInfo(DatClass):
     """..."""
     spu_id: str = None
     name: str = None

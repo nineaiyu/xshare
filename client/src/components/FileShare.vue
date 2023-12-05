@@ -93,7 +93,7 @@
             :visible="scope.row.timeVisible"
             :width="300"
             placement="bottom"
-            trigger="manual">
+            trigger="click">
           <div style="text-align: center">
             <span>{{ scope.row.name }}过期时间</span>
             <div style="margin: 5px auto">
@@ -122,7 +122,7 @@
             :visible="scope.row.pwdVisible"
             :width="200"
             placement="bottom"
-            trigger="manual">
+            trigger="click">
           <div style="text-align: center">
             <span>{{ scope.row.name }}访问密码</span>
             <div style="margin: 5px auto">
@@ -158,7 +158,7 @@
             :visible="scope.row.visible"
             :width="200"
             placement="bottom"
-            trigger="manual">
+            trigger="click">
           <div style="text-align: center">
             <span>{{ scope.row.name }}备注信息</span>
             <div style="margin: 5px auto">

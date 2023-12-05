@@ -7,7 +7,7 @@ from common.libs.alidrive.types.Enum import *
 
 
 @dataclass
-class CreateFileResponse(DataClass):
+class CreateFileResponse(DatClass):
     """..."""
     file_name: str = None
     type: BaseFileType = None

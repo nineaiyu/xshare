@@ -3,14 +3,14 @@ from dataclasses import dataclass, field
 from typing import List
 
 from .CroppingSuggestionItem import CroppingSuggestionItem
-from .DataClass import DataClass
+from .Type import DatClass
 from .FaceThumbnail import FaceThumbnail
 from .ImageQuality import ImageQuality
 from .SystemTag import SystemTag
 
 
 @dataclass
-class ImageMedia(DataClass):
+class ImageMedia(DatClass):
     """..."""
     time: str = None
     faces: str = None

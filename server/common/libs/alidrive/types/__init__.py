@@ -2,11 +2,10 @@
 # 必须在头部, 不能使用Pycharm的自动格式化
 # from .Enum import *
 
-
+from .Type import DataType, DatClass
 from .BaseDrive import BaseDrive
 from .BaseFile import BaseFile
 from .BaseUser import BaseUser
-from .DataClass import DataClass
 from .FileInfo import FileInfo
 from .Null import Null
 from .PersonalSpaceInfo import PersonalSpaceInfo

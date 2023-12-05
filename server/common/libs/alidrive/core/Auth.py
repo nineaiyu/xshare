@@ -12,7 +12,7 @@ import requests
 from api.models import AliyunDrive
 from common.base.magic import MagicCacheData
 from common.libs.alidrive.core.Config import *
-from common.libs.alidrive.types import Token, DataClass
+from common.libs.alidrive.types import Token
 
 
 def get_token_from_db(drive_obj):
@@ -41,9 +41,12 @@ class Auth(object):
 
     _SLEEP_TIME_SEC = None
     _SHARE_PWD_DICT = {}
+
     # x-headers
-    _X_PUBLIC_KEY = '04d9d2319e0480c840efeeb75751b86d0db0c5b9e72c6260a1d846958adceaf9dee789cab7472741d23aafc1a9c591f72e7ee77578656e6c8588098dea1488ac2a'
-    _X_SIGNATURE = 'f4b7bed5d8524a04051bd2da876dd79afe922b8205226d65855d02b267422adb1e0d8a816b021eaf5c36d101892180f79df655c5712b348c2a540ca136e6b22001'
+    _X_PUBLIC_KEY = ('04d9d2319e0480c840efeeb75751b86d0db0c5b9e72c6260a1d846958adceaf9d'
+                     'ee789cab7472741d23aafc1a9c591f72e7ee77578656e6c8588098dea1488ac2a')
+    _X_SIGNATURE = ('f4b7bed5d8524a04051bd2da876dd79afe922b8205226d65855d02b267422adb1'
+                    'e0d8a816b021eaf5c36d101892180f79df655c5712b348c2a540ca136e6b22001')
 
     def debug_log(self, response: requests.Response):
         """打印错误日志, 便于分析调试"""
@@ -57,6 +60,8 @@ class Auth(object):
             refresh_token: str = None,
             level: int = logging.DEBUG,
             proxies: Dict = None,
+            request_failed_delay: float = 3,
+            requests_timeout: float = 60,
     ):
         """登录验证
         :param drive_obj: 阿里云盘授权对象
@@ -66,6 +71,8 @@ class Auth(object):
         """
         self.drive_obj = drive_obj
         self.log = logging.getLogger(f'{__name__}:{drive_obj}')
+        self._requests_timeout = requests_timeout
+        self._request_failed_delay = request_failed_delay
 
         fmt = f'%(asctime)s.%(msecs)03d {drive_obj}.%(levelname)s %(message)s'
 
@@ -105,9 +112,10 @@ class Auth(object):
         self.session.headers.update({
             'Authorization': self.token.access_token
         })
+
     def _create_session(self):
         self.post(USERS_V1_USERS_DEVICE_CREATE_SESSION, body={
-            'deviceName': f'xshare - {self.drive_obj.nick_name}',
+            'deviceName': f'xsee - {self.drive_obj.nick_name}',
             'modelName': "Windows 操作系统",
             'pubKey': self._X_PUBLIC_KEY,
         })
@@ -205,7 +213,7 @@ class Auth(object):
         if response.status_code == 200:
             self.log.info('刷新 token 成功')
             # noinspection PyProtectedMember
-            self.token = DataClass.fill_attrs(Token, response.json())
+            self.token = Token(**response.json())
             self._init_x_headers()
             self._save()
         else:
@@ -234,10 +242,16 @@ class Auth(object):
 
         response = None
         for i in range(1, 6):
-            response = self.session.request(
-                method=method, url=url, params=params, data=data,
-                headers=headers, verify=self._VERIFY_SSL, json=body
-            )
+            try:
+                response = self.session.request(
+                    method=method, url=url, params=params, data=data,
+                    headers=headers, verify=self._VERIFY_SSL, json=body, timeout=self._requests_timeout
+                )
+            except requests.exceptions.ConnectionError as e:
+                self.log.warning(e)
+                time.sleep(self._request_failed_delay)
+                continue
+
             status_code = response.status_code
             self._log_response(response)
 
@@ -248,10 +262,7 @@ class Auth(object):
                     share_pwd = body['share_pwd']
                     r = self.post(
                         V2_SHARE_LINK_GET_SHARE_TOKEN,
-                        body={
-                            'share_id': share_id,
-                            'share_pwd': share_pwd
-                        }
+                        body={'share_id': share_id, 'share_pwd': share_pwd}
                     )
                     share_token = r.json()['share_token']
                     headers['x-share-token'].share_token = share_token
@@ -276,14 +287,22 @@ class Auth(object):
                 self.log.warning(f'{err_msg}，暂停 {sleep_int} 秒钟')
                 time.sleep(sleep_int)
                 continue
+
+            if status_code == 500:
+                raise Exception(response.content)
+
             if status_code == 400:
-                if b'"DeviceSessionSignatureInvalid"' in response.content:
+                if b'"DeviceSessionSignatureInvalid"' in response.content \
+                        or b'"not found device info"' in response.content:
                     self._create_session()
                     continue
                 elif b'"InvalidResource.FileTypeFolder"' in response.content:
-                    self.log.warning('operate failed')
-            if status_code == 500:
-                raise Exception(response.content)
+                    self.log.warning(
+                        '请区分 文件 和 文件夹，有些操作是它们独有的，比如获取下载链接，很显然 文件夹 是没有的！')
+
+            if status_code == 403:
+                if b'"SharelinkCreateExceedDailyLimit"' in response.content:
+                    raise Exception(response.content)
 
             return response
 
@@ -306,5 +325,8 @@ class Auth(object):
     def _log_response(self, response: requests.Response):
         """打印响应日志"""
         self.log.info(
-            f'{response.request.method} {response.url} {response.status_code} {response.content}'
+            f'{response.request.method} {response.url} {response.status_code} {len(response.content)}'
         )
+
+    def device_logout(self):
+        return self.post(USERS_V1_USERS_DEVICE_LOGOUT)

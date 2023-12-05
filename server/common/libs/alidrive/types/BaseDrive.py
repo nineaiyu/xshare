@@ -2,11 +2,11 @@
 
 from dataclasses import dataclass, field
 
-from .DataClass import DataClass
+from .Type import DatClass
 
 
 @dataclass
-class BaseDrive(DataClass):
+class BaseDrive(DatClass):
     """..."""
     drive_id: str = None
     used_size: int = None

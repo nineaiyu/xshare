@@ -52,11 +52,10 @@ class Download(BaseAligo):
             cmd = ' '.join([
                 f'aria2c "{url}"',
                 f'--referer=https://www.aliyundrive.com/',
-                f'--console-log-level=warn',
-                f'--download-result=hide',
-                f'--auto-file-renaming=false',
                 f'-d "{file_dir}"',
                 f'-o "{file_name}"',
+                f'-x 16',
+                f'-s 8',
             ])
             # print(cmd)
             os.system(cmd)
@@ -77,15 +76,22 @@ class Download(BaseAligo):
                 'Range': f'bytes={tmp_size}-',
                 'Referer': 'https://www.aliyundrive.com/',
             }, stream=True) as resp:
-                llen = int(resp.headers.get('content-length', 0))
-                if resp.headers.get('Accept-Ranges', None) != 'bytes':
-                    raise ValueError(f'无效下载链接或链接已过期 {resp.url}')
-                progress_bar = tqdm(total=llen + tmp_size, unit='B', unit_scale=True, colour='#31a8ff')
-                progress_bar.update(tmp_size)
-                with open(tmp_file, 'ab') as f:
-                    for content in resp.iter_content(chunk_size=Download._DOWNLOAD_CHUNK_SIZE):
-                        progress_bar.update(len(content))
-                        f.write(content)
+                total_size = int(resp.headers.get('content-length', 0))
+                accept_range = resp.headers.get('Accept-Ranges', None)
+                if accept_range == 'bytes':
+                    progress_bar = tqdm(total=total_size + tmp_size, unit='B', unit_scale=True, colour='#31a8ff')
+                    progress_bar.update(tmp_size)
+                    with open(tmp_file, 'ab') as f:
+                        for content in resp.iter_content(chunk_size=Download._DOWNLOAD_CHUNK_SIZE):
+                            progress_bar.update(len(content))
+                            f.write(content)
+                else:
+                    self._auth.log.warning(f'不支持断点续传 {file_path}')
+                    progress_bar = tqdm(total=total_size, unit='B', unit_scale=True, colour='#31a8ff')
+                    with open(tmp_file, 'wb') as f:
+                        for content in resp.iter_content(chunk_size=Download._DOWNLOAD_CHUNK_SIZE):
+                            progress_bar.update(len(content))
+                            f.write(content)
             os.renames(tmp_file, file_path)
         finally:
             if progress_bar:
@@ -111,10 +117,6 @@ class Download(BaseAligo):
         rt = []
         for file in files:
             file_path = os.path.join(local_folder, file.name)
-            try:
-                file_path = self._core_download_file(file_path, file.download_url)
-            except ValueError:
-                file = self._core_get_file(GetFileRequest(file_id=file.file_id, drive_id=file.drive_id))
-                file_path = self._core_download_file(file_path, file.download_url)
+            file_path = self._core_download_file(file_path, file.download_url or file.url)
             rt.append(file_path)
         return rt

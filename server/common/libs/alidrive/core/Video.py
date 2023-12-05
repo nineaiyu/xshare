@@ -21,3 +21,4 @@ class Video(BaseAligo):
         """可获取m3u8链接"""
         response = self._post(V2_FILE_GET_VIDEO_PREVIEW_PLAY_INFO, body=body)
         return self._result(response, GetVideoPreviewPlayInfoResponse)
+

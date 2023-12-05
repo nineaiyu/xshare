@@ -2,12 +2,12 @@
 
 from dataclasses import dataclass, field
 
-from common.libs.alidrive import DataClass
+from common.libs.alidrive import DatClass
 from common.libs.alidrive.types.Enum import *
 
 
 @dataclass
-class GetFileListRequest(DataClass):
+class GetFileListRequest(DatClass):
     """..."""
     parent_file_id: str = 'root'
     drive_id: str = None

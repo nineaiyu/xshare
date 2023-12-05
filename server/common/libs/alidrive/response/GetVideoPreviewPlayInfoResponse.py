@@ -1,11 +1,11 @@
 """..."""
 from dataclasses import dataclass
 
-from common.libs.alidrive.types import DataClass, VideoPreviewPlayInfo
+from common.libs.alidrive.types import DatClass, VideoPreviewPlayInfo
 
 
 @dataclass
-class GetVideoPreviewPlayInfoResponse(DataClass):
+class GetVideoPreviewPlayInfoResponse(DatClass):
     """..."""
     domain_id: str = None
     drive_id: str = None

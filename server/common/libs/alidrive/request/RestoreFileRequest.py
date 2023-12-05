@@ -1,11 +1,11 @@
 """..."""
 from dataclasses import dataclass
 
-from common.libs.alidrive.types import DataClass
+from common.libs.alidrive.types import DatClass
 
 
 @dataclass
-class RestoreFileRequest(DataClass):
+class RestoreFileRequest(DatClass):
     """..."""
     file_id: str
     drive_id: str = None

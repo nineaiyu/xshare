@@ -57,7 +57,7 @@
             :visible="scope.row.visible"
             :width="200"
             placement="bottom"
-            trigger="manual">
+            trigger="click">
           <div style="text-align: center">
             <span>{{ scope.row.name }}备注信息</span>
             <div style="margin: 5px auto">

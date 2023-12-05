@@ -1,11 +1,11 @@
 """获取下载链接请求"""
 from dataclasses import dataclass
 
-from common.libs.alidrive.types import DataClass
+from common.libs.alidrive.types import DatClass
 
 
 @dataclass
-class GetDownloadUrlRequest(DataClass):
+class GetDownloadUrlRequest(DatClass):
     """
     /**
    * 过期时间

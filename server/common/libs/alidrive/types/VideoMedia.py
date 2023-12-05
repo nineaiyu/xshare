@@ -2,14 +2,14 @@
 from dataclasses import dataclass
 from typing import List
 
-from .DataClass import DataClass
+from .Type import DatClass
 from .ImageTag import ImageTag
 from .VideoMediaAudioStream import VideoMediaAudioStream
 from .VideoMediaVideoStream import VideoMediaVideoStream
 
 
 @dataclass
-class VideoMedia(DataClass):
+class VideoMedia(DatClass):
     """..."""
     time: str = None
     city: str = None

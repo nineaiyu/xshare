@@ -2,12 +2,12 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from common.libs.alidrive.types import DataClass, UploadPartInfo
+from common.libs.alidrive.types import DatClass, UploadPartInfo
 from common.libs.alidrive.types.Enum import *
 
 
 @dataclass
-class CreateFileRequest(DataClass):
+class CreateFileRequest(DatClass):
     """..."""
     name: str
     file_id: str = None

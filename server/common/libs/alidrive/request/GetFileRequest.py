@@ -7,7 +7,7 @@ from common.libs.alidrive.types.Enum import *
 
 
 @dataclass
-class GetFileRequest(DataClass):
+class GetFileRequest(DatClass):
     """..."""
     file_id: str
     drive_id: str = None

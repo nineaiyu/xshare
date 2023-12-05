@@ -2,14 +2,13 @@
 import base64
 import hashlib
 import math
-from dataclasses import asdict
 from typing import Union, List
 
 import requests
 from tqdm import tqdm
 
 from common.cache.storage import UploadPartInfoCache
-from common.libs.alidrive import DataClass
+from common.libs.alidrive import DatClass
 from common.libs.alidrive.core.BaseAligo import BaseAligo
 from common.libs.alidrive.core.Config import *
 from common.libs.alidrive.request import *
@@ -41,7 +40,7 @@ class Create(BaseAligo):
 
     def _core_create_folder(self, body: CreateFolderRequest) -> CreateFileResponse:
         """..."""
-        return self.create_file(CreateFileRequest(**asdict(body)))
+        return self.create_file(CreateFileRequest(**body.to_dict()))
 
     def complete_file(self, body: CompleteFileRequest) -> BaseFile:
         """
@@ -175,7 +174,7 @@ class Create(BaseAligo):
             drive_id: str = None,
             check_name_mode: CheckNameMode = "auto_rename"):
 
-        file_info = DataClass.fill_attrs(FileInfo, file_info)
+        file_info = FileInfo(**file_info)
         if drive_id is None:
             drive_id = self._auth.drive_obj.default_drive_id
 
@@ -208,7 +207,7 @@ class Create(BaseAligo):
         return self.get_upload_part_url(part_info.part_info_list)
 
     def upload_complete(self, file_info: dict):
-        file_info = DataClass.fill_attrs(FileInfo, file_info)
+        file_info = FileInfo(**file_info)
         up_cache = UploadPartInfoCache(file_info.sid)
         part_info = up_cache.get_storage_cache()
         # complete
@@ -231,7 +230,7 @@ class Create(BaseAligo):
             parent_file_id: str = 'root',
             drive_id: str = None,
             check_name_mode: CheckNameMode = "auto_rename"):
-        file_info = DataClass.fill_attrs(FileInfo, file_info)
+        file_info = FileInfo(**file_info)
         if drive_id is None:
             drive_id = self.default_drive_id
         part_info = self._content_hash(file_info=file_info, parent_file_id=parent_file_id, drive_id=drive_id,

@@ -366,15 +366,15 @@ CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_BEAT_SCHEDULE = {
     'sync_drive_size_job': {
         'task': 'api.tasks.batch_sync_drive_size',
-        'schedule': crontab(hour=2, minute=2),
+        'schedule': crontab(hour='2', minute='2'),
         'args': ()
     }, 'auth_clean_invalid_share_job': {
         'task': 'api.tasks.auth_clean_invalid_share',
-        'schedule': crontab(hour=3, minute=3),
+        'schedule': crontab(hour='3', minute='3'),
         'args': ()
     }, 'clean_visitor_user_job': {
         'task': 'api.tasks.clean_visitor_user',
-        'schedule': crontab(hour=2, minute=30),
+        'schedule': crontab(hour='2', minute='30'),
         'args': ()
     },
 }

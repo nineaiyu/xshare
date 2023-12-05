@@ -6,7 +6,7 @@ from common.libs.alidrive.types.Enum import *
 
 
 @dataclass
-class GetRecycleBinListRequest(DataClass):
+class GetRecycleBinListRequest(DatClass):
     """..."""
     drive_id: str = None
     fields: str = field(default=None, repr=False)

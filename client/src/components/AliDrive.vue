@@ -15,7 +15,7 @@
           :visible="sid!==''"
           :width="200"
           placement="bottom"
-          trigger="manual">
+          trigger="click">
         <div style="text-align: center">
           <span>手机阿里云盘扫码授权</span>
           <vue-qr v-if="qrcode" :text="qrcode" style="width: 176px;height: 166px"></vue-qr>
@@ -84,7 +84,7 @@
             :visible="scope.row.visible"
             :width="200"
             placement="bottom"
-            trigger="manual">
+            trigger="click">
           <div style="text-align: center">
             <span>{{ scope.row.user_name }}备注信息</span>
             <div style="margin: 5px auto">

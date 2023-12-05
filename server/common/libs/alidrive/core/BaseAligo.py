@@ -2,7 +2,7 @@
 import json
 import logging
 import traceback
-from dataclasses import asdict, is_dataclass
+from dataclasses import is_dataclass
 from typing import Generic, List, Iterator, Dict, Optional
 from typing import Union
 
@@ -13,8 +13,7 @@ from common.libs.alidrive.core import *
 from common.libs.alidrive.core.Config import *
 from common.libs.alidrive.request import *
 from common.libs.alidrive.response import *
-from common.libs.alidrive.types import BaseUser, BaseDrive, Null, BaseFile
-from common.libs.alidrive.types.DataClass import DataType, DataClass
+from common.libs.alidrive.types import BaseUser, BaseDrive, Null, BaseFile, DataType, DatClass
 
 
 class BaseAligo:
@@ -54,20 +53,23 @@ class BaseAligo:
             self,
             path: str,
             host: str = API_HOST,
-            body: Union[DataType, Dict] = None,
-            ignore_auth: bool = False
+            body: Union[DatClass, Dict] = None,
+            headers: dict = None,
+            ignore_auth: bool = False,
+            params: dict = None,
     ) -> requests.Response:
         """统一处理数据类型和 drive_id"""
         if body is None:
             body = {}
-        elif isinstance(body, DataClass):
-            body = asdict(body)
+        elif isinstance(body, DatClass):
+            body = body.to_dict()
 
         if 'drive_id' in body and body['drive_id'] is None:
             # 如果存在 attr drive_id 并且它是 None，并将 default_drive_id 设置为它
             body['drive_id'] = self.default_drive_id
 
-        return self._auth.post(path=path, host=host, body=body, ignore_auth=ignore_auth)
+        return self._auth.post(path=path, host=host, body=body, headers=headers, ignore_auth=ignore_auth, params=params)
+
 
     @property
     def default_drive_id(self):
@@ -96,7 +98,7 @@ class BaseAligo:
 
     def _result(self, response: requests.Response,
                 cls: Generic[DataType],
-                status_code: Union[List, int] = 200, field=None) -> Union[Null, DataType]:
+                status_code: Union[List, int] = 200, field: str = None) -> Union[Null, DataType]:
         """统一处理响应
 
         :param response:
@@ -113,10 +115,12 @@ class BaseAligo:
             try:
                 # noinspection PyProtectedMember
                 d = json.loads(text)
-                d = d[field] if field else d
+                if field:
+                    for i in field.split('.'):
+                        d = d[i]
                 if isinstance(d, list):
-                    return [DataClass.fill_attrs(cls, i) for i in d]
-                return DataClass.fill_attrs(cls, d)
+                    return [cls(**i) for i in d]
+                return cls(**d)
             except TypeError:
                 self._auth.debug_log(response)
                 self._auth.log.error(cls)
@@ -124,11 +128,13 @@ class BaseAligo:
         self._auth.log.warning(f'{response.status_code} {response.text[:200]}')
         return Null(response)
 
-    def _list_file(self, path: str, body: Union[DataClass, Dict], resp_type: Generic[DataType]) -> Iterator[DataType]:
+    def _list_file(
+            self, path: str, body: Union[DatClass, Dict],
+            resp_type: Generic[DataType], headers: dict = None, params: dict = None) -> Iterator[DataType]:
         """
         枚举文件: 用于统一处理 1.文件列表 2.搜索文件列表 3.收藏列表 4.回收站列表
         :param path: [str] 批量处理的路径
-        :param body: [DataClass] 批量处理的参数
+        :param body: [DatClass] 批量处理的参数
         :param resp_type: [Callable] 响应类型
         :return: [Iterator[DataType]] 响应结果
 
@@ -139,7 +145,7 @@ class BaseAligo:
         >>> if isinstance(result[-1], Null):
         >>>     print('请求失败')
         """
-        response = self._post(path, body=body)
+        response = self._post(path, body=body, headers=headers, params=params)
         file_list = self._result(response, resp_type)
         if isinstance(file_list, Null):
             yield file_list
@@ -150,7 +156,7 @@ class BaseAligo:
                 body['marker'] = file_list.next_marker
             else:
                 body.marker = file_list.next_marker
-            yield from self._list_file(path=path, body=body, resp_type=resp_type)
+            yield from self._list_file(path=path, body=body, resp_type=resp_type, headers=headers, params=params)
 
     def _core_get_file(self, body: GetFileRequest) -> BaseFile:
         """获取文件信息, 其他类中可能会用到, 所以放到基类中"""
@@ -192,7 +198,7 @@ class BaseAligo:
             response = self._post(V3_BATCH, body={
                 "requests": [
                     {
-                        "body": asdict(request.body) if is_dataclass(request.body) else request.body,
+                        "body": request.body.to_dict() if is_dataclass(request.body) else request.body,
                         "headers": request.headers,
                         "id": request.id,
                         "method": request.method,

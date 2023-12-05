@@ -1,11 +1,11 @@
 """..."""
 from dataclasses import dataclass
 
-from .DataClass import DataClass
+from .Type import DatClass
 
 
 @dataclass
-class VideoMediaAudioStream(DataClass):
+class VideoMediaAudioStream(DatClass):
     """..."""
     code_name: str = None
     duration: str = None

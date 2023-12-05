@@ -6,7 +6,7 @@ from common.libs.alidrive.types.Enum import BaseFileContentHashName
 
 
 @dataclass
-class GetDownloadUrlResponse(DataClass):
+class GetDownloadUrlResponse(DatClass):
     """..."""
     expiration: str = None
     method: str = None

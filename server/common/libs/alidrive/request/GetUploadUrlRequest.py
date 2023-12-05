@@ -7,7 +7,7 @@ from common.libs.alidrive.types import *
 
 
 @dataclass
-class GetUploadUrlRequest(DataClass):
+class GetUploadUrlRequest(DatClass):
     """GetUploadUrlRequest"""
     drive_id: str = None
     file_id: str = None

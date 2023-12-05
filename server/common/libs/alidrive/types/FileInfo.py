@@ -1,11 +1,11 @@
 """..."""
 from dataclasses import dataclass, field
 
-from .DataClass import DataClass
+from .Type import DatClass
 
 
 @dataclass
-class FileInfo(DataClass):
+class FileInfo(DatClass):
     """..."""
     sid: str = None
     file_name: str = None

@@ -1,12 +1,12 @@
 """..."""
 from dataclasses import dataclass
 
-from common.libs.alidrive.types import DataClass
+from common.libs.alidrive.types import DatClass
 from common.libs.alidrive.types.Enum import GetVideoPreviewCategory, VideoTemplateID
 
 
 @dataclass
-class GetVideoPreviewPlayInfoRequest(DataClass):
+class GetVideoPreviewPlayInfoRequest(DatClass):
     """..."""
     file_id: str = None
     drive_id: str = None

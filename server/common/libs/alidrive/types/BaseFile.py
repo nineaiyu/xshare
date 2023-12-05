@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from .DataClass import DataClass
+from .Type import DatClass
 from .Enum import *
 from .FieldsInfo import FieldsInfo
 from .ImageMedia import ImageMedia
@@ -11,7 +11,7 @@ from .VideoPreview import VideoPreview
 
 
 @dataclass
-class BaseFile(DataClass):
+class BaseFile(DatClass):
     """..."""
     type: BaseFileType = None
     file_id: str = None

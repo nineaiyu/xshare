@@ -1,10 +1,10 @@
 """..."""
 from dataclasses import dataclass
 
-from common.libs.alidrive.types import DataClass
+from common.libs.alidrive.types import DatClass
 
 
 @dataclass
-class GetDriveRequest(DataClass):
+class GetDriveRequest(DatClass):
     """..."""
     drive_id: str = None

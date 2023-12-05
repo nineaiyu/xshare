@@ -2,11 +2,11 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from common.libs.alidrive.types import DataClass, BaseDrive
+from common.libs.alidrive.types import DatClass, BaseDrive
 
 
 @dataclass
-class ListMyDrivesResponse(DataClass):
+class ListMyDrivesResponse(DatClass):
     """..."""
     items: List[BaseDrive] = field(default_factory=list)
     next_marker: str = ''

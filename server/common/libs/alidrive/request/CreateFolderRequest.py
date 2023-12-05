@@ -7,7 +7,7 @@ from common.libs.alidrive.types.Enum import *
 
 
 @dataclass
-class CreateFolderRequest(DataClass):
+class CreateFolderRequest(DatClass):
     """..."""
     name: str
     parent_file_id: str = 'root'

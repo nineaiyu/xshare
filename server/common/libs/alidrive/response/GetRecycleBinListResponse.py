@@ -3,11 +3,11 @@ from dataclasses import dataclass, field
 from typing import List
 
 from common.libs.alidrive.types import BaseFile
-from common.libs.alidrive.types import DataClass
+from common.libs.alidrive.types import DatClass
 
 
 @dataclass
-class GetRecycleBinListResponse(DataClass):
+class GetRecycleBinListResponse(DatClass):
     """..."""
     items: List[BaseFile] = field(default_factory=list)
     next_marker: str = ''

@@ -2,12 +2,11 @@
 from dataclasses import dataclass
 from typing import Dict, Union
 
-from common.libs.alidrive.types import DataClass
-from common.libs.alidrive.types.DataClass import DataType
+from common.libs.alidrive.types import DatClass, DataType
 
 
 @dataclass
-class BatchSubRequest(DataClass):
+class BatchSubRequest(DatClass):
     """..."""
     body: Union[DataType, Dict]
     id: str

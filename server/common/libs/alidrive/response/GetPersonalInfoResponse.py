@@ -1,11 +1,11 @@
 """..."""
 from dataclasses import dataclass
 
-from common.libs.alidrive.types import DataClass, PersonalRightsInfo, PersonalSpaceInfo
+from common.libs.alidrive.types import DatClass, PersonalRightsInfo, PersonalSpaceInfo
 
 
 @dataclass
-class GetPersonalInfoResponse(DataClass):
+class GetPersonalInfoResponse(DatClass):
     """..."""
     personal_rights_info: PersonalRightsInfo = None
     personal_space_info: PersonalSpaceInfo = None

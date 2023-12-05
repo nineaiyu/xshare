@@ -2,11 +2,11 @@
 from dataclasses import dataclass
 
 from .CroppingBoundary import CroppingBoundary
-from .DataClass import DataClass
+from .Type import DatClass
 
 
 @dataclass
-class CroppingSuggestionItem(DataClass):
+class CroppingSuggestionItem(DatClass):
     """..."""
     aspect_ratio: str = None
     cropping_boundary: CroppingBoundary = None

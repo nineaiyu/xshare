@@ -7,7 +7,7 @@ from common.libs.alidrive.types import *
 
 
 @dataclass
-class GetUploadUrlResponse(DataClass):
+class GetUploadUrlResponse(DatClass):
     """GetUploadUrlResponse"""
     domain_id: str = None
     drive_id: str = None
